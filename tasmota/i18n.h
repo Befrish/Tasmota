@@ -34,6 +34,7 @@
 #define D_JSON_AP "AP"                   // Access Point
 #define D_JSON_APMAC_ADDRESS "APMac"
 #define D_JSON_APPENDED "Appended"
+#define D_JSON_BATTERY "Battery"
 #define D_JSON_BAUDRATE "Baudrate"
 #define D_JSON_BLINK "Blink"
 #define D_JSON_BLOCKED_LOOP "Blocked Loop"
@@ -601,6 +602,8 @@ const char JSON_SNS_TEMPHUM[] PROGMEM = ",\"%s\":{\"" D_JSON_TEMPERATURE "\":%s,
 const char JSON_SNS_ILLUMINANCE[] PROGMEM = ",\"%s\":{\"" D_JSON_ILLUMINANCE "\":%d}";
 const char JSON_SNS_MOISTURE[] PROGMEM = ",\"%s\":{\"" D_JSON_MOISTURE "\":%d}";
 
+const char JSON_SNS_BATTERY[] PROGMEM = ",\"%s\":{\"" D_JSON_BATTERY "\":%d}";
+
 const char JSON_SNS_GNGPM[] PROGMEM = ",\"%s\":{\"" D_JSON_TOTAL_USAGE "\":%s,\"" D_JSON_FLOWRATE "\":%s}";
 
 const char S_LOG_I2C_FOUND_AT[] PROGMEM = D_LOG_I2C "%s " D_FOUND_AT " 0x%x";
@@ -636,6 +639,8 @@ const char HTTP_SNS_VOLTAGE[] PROGMEM = "{s}" D_VOLTAGE "{m}%s " D_UNIT_VOLT "{e
 const char HTTP_SNS_CURRENT[] PROGMEM = "{s}" D_CURRENT "{m}%s " D_UNIT_AMPERE "{e}";
 const char HTTP_SNS_POWER[] PROGMEM = "{s}" D_POWERUSAGE "{m}%s " D_UNIT_WATT "{e}";
 const char HTTP_SNS_ENERGY_TOTAL[] PROGMEM = "{s}" D_ENERGY_TOTAL "{m}%s " D_UNIT_KILOWATTHOUR "{e}";
+
+const char HTTP_SNS_BATTERY[] PROGMEM = "{s}%s " D_BATTERY "{m}%d%%{e}";
 
 const char S_MAIN_MENU[] PROGMEM = D_MAIN_MENU;
 const char S_CONFIGURATION[] PROGMEM = D_CONFIGURATION;

@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "名称:"
 #define D_AUTO "自动"
+#define D_BATTERY "Battery"
 #define D_BLINK "闪烁"
 #define D_BLINKOFF "闪烁关"
 #define D_BOOT_COUNT "启动次数"

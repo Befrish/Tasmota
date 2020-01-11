@@ -56,6 +56,7 @@
 #define D_AP "Ponto de acesso"     	// Ponto de Acesso
 #define D_AS "como"
 #define D_AUTO "Auto"
+#define D_BATTERY "Battery"
 #define D_BLINK "Pulsar"
 #define D_BLINKOFF "Pulsar desligado"
 #define D_BOOT_COUNT "Contagem de inicialização"

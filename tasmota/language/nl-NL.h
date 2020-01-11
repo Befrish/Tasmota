@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "als"
 #define D_AUTO "AUTO"
+#define D_BATTERY "Battery"
 #define D_BLINK "Knipper"
 #define D_BLINKOFF "KnipperUit"
 #define D_BOOT_COUNT "Herstarts"

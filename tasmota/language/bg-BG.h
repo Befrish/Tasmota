@@ -56,6 +56,7 @@
 #define D_AP "Точка за достъп"                    // Access Point
 #define D_AS "като"
 #define D_AUTO "АВТОМАТИЧНО"
+#define D_BATTERY "Battery"
 #define D_BLINK "Мигане вкл."
 #define D_BLINKOFF "Мигане изкл."
 #define D_BOOT_COUNT "Брой на стартиранията"

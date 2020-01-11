@@ -315,6 +315,7 @@ enum UserSelectableAdc0 {
   ADC0_CT_POWER,       // Current
 //  ADC0_SWITCH,         // Switch
 //  ADC0_SWITCH_INV,
+  ADC0_BATTERY,        // Battery monitor (in percent)
   ADC0_END };
 
 // Programmer selectable ADC0 functionality
@@ -330,6 +331,7 @@ const char kAdc0Names[] PROGMEM =
   D_SENSOR_BUTTON "|" D_SENSOR_BUTTON "i|"
   D_MOISTURE "|"
   D_CT_POWER "|"
+  D_BATTERY "|"
 //  D_SENSOR_SWITCH "|" D_SENSOR_SWITCH "i|"
   ;
 
@@ -409,6 +411,9 @@ enum SupportedModules {
   SONOFF_L1,
   SONOFF_IFAN03,
   EXS_DIMMER,
+  BEFRISH_THS280,
+  BEFRISH_THSB280,
+  BEFRISH_THS2302,
   MAXMODULE};
 
 #define USER_MODULE        255
@@ -862,7 +867,10 @@ const uint8_t kModuleNiceList[] PROGMEM = {
   SYF05,
   YTF_IR_BRIDGE,
   WITTY,               // Development Devices
-  WEMOS
+  WEMOS,
+  BEFRISH_THS280,      // Befrish THS280
+  BEFRISH_THSB280,     // Befrish THSB280
+  BEFRISH_THS2302      // Befrish THSB2302
 };
 
 // Default module settings
@@ -2185,6 +2193,69 @@ const mytmplt kModules[MAXMODULE] PROGMEM = {
      GPIO_USER,        // GPIO14
      0,                // GPIO15
      0, 0
+  },
+  { "THS280",          // Befrish Temperature-Humidity-Sensor
+                       // (ESP8266 + BME280)
+     0,                // GPIO00 Button
+     0,                // GPIO01 Serial RXD and Optional sensor
+     0,                // GPIO02 Only available on newer Sonoff Basic R2 V1
+     0,                // GPIO03 Serial TXD and Optional sensor
+     GPIO_I2C_SDA,     // GPIO04 Optional sensor
+     GPIO_I2C_SCL,     // GPIO05
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09 (SD_DATA2 Flash QIO or ESP8285)
+     0,                // GPIO10 (SD_DATA3 Flash QIO or ESP8285)
+                       // GPIO11 (SD_CMD   Flash)
+     0,                // GPIO12 Red Led and Relay (0 = Off, 1 = On)
+     0,                // GPIO13 Green Led (0 = On, 1 = Off) - Link and Power status
+     0,                // GPIO14 Optional sensor
+     0,                // GPIO15
+     0,                // GPIO16
+     0                 // ADC0 Analog input
+  },
+  { "THSB280",         // Befrish Temperature-Humidity-Sensor
+                       // (ESP8266 + BME280 + 3.7V-Battery)
+     0,                // GPIO00 Button
+     0,                // GPIO01 Serial RXD and Optional sensor
+     0,                // GPIO02 Only available on newer Sonoff Basic R2 V1
+     0,                // GPIO03 Serial TXD and Optional sensor
+     GPIO_I2C_SDA,     // GPIO04 Optional sensor
+     GPIO_I2C_SCL,     // GPIO05
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09 (SD_DATA2 Flash QIO or ESP8285)
+     0,                // GPIO10 (SD_DATA3 Flash QIO or ESP8285)
+                       // GPIO11 (SD_CMD   Flash)
+     0,                // GPIO12 Red Led and Relay (0 = Off, 1 = On)
+     0,                // GPIO13 Green Led (0 = On, 1 = Off) - Link and Power status
+     GPIO_DEEPSLEEP,   // GPIO14 Optional sensor
+     0,                // GPIO15
+     0,                // GPIO16
+     ADC0_BATTERY      // ADC0 Analog input
+  },
+  { "THS2302",         // Befrish Temperature-Humidity-Sensor 
+                       // (ESP8266 + AM2302)
+     0,                // GPIO00 Button
+     0,                // GPIO01 Serial RXD and Optional sensor
+     GPIO_DHT22,       // GPIO02 Only available on newer Sonoff Basic R2 V1
+     0,                // GPIO03 Serial TXD and Optional sensor
+     0,                // GPIO04 Optional sensor
+     0,                // GPIO05
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09 (SD_DATA2 Flash QIO or ESP8285)
+     0,                // GPIO10 (SD_DATA3 Flash QIO or ESP8285)
+                       // GPIO11 (SD_CMD   Flash)
+     0,                // GPIO12 Red Led and Relay (0 = Off, 1 = On)
+     0,                // GPIO13 Green Led (0 = On, 1 = Off) - Link and Power status
+     0,                // GPIO14 Optional sensor
+     0,                // GPIO15
+     0,                // GPIO16
+     0                 // ADC0 Analog input
   }
 };
 

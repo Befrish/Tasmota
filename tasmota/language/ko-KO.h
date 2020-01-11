@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "as"
 #define D_AUTO "자동"
+#define D_BATTERY "Battery"
 #define D_BLINK "깜박임"
 #define D_BLINKOFF "깜박임 끄기"
 #define D_BOOT_COUNT "부팅 횟수"

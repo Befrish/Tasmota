@@ -67,6 +67,7 @@ struct {
   float energy = 0;
   uint32_t previous_millis = 0;
   uint16_t last_value = 0;
+  uint8_t battery = 0;
 } Adc;
 
 void AdcInit(void)
@@ -96,6 +97,12 @@ void AdcInit(void)
       Settings.adc_param1 = ANALOG_CT_FLAGS;              //(uint32_t) 0
       Settings.adc_param2 = ANALOG_CT_MULTIPLIER;         //(uint32_t) 100000
       Settings.adc_param3 = ANALOG_CT_VOLTAGE;            //(int)      10
+    }
+    else if (ADC0_BATTERY == my_adc0) {
+      Settings.adc_param_type = ADC0_BATTERY;
+      Settings.adc_param1 = ANALOG_NTC_BRIDGE_RESISTANCE;
+      Settings.adc_param2 = ANALOG_NTC_RESISTANCE;
+      Settings.adc_param3 = ANALOG_NTC_B_COEFFICIENT * 10000;
     }
   }
 }
@@ -186,6 +193,18 @@ void AdcGetCurrentPower(uint8_t factor)
   Adc.previous_millis = current_millis;
 }
 
+uint8_t AdcGetBattery(void)
+{
+  int adc = AdcRead(2);
+  // map(adc, 0, 1024, 0, 100);
+  // 100% = 4.2V; 0% = 3.4V; if no battery connected 0V
+  if (adc < 828) {
+    return 0;
+  } else {
+    return map(adc - 828, 0, 196, 0, 100);
+  }
+}
+
 void AdcEverySecond(void)
 {
   if (ADC0_TEMP == my_adc0) {
@@ -198,6 +217,9 @@ void AdcEverySecond(void)
   }
   else if (ADC0_CT_POWER == my_adc0) {
     AdcGetCurrentPower(5);
+  }
+  else if (ADC0_BATTERY == my_adc0) {
+    Adc.battery = AdcGetBattery();
   }
 }
 
@@ -300,6 +322,18 @@ void AdcShow(bool json)
     }
   }
 
+  else if (ADC0_BATTERY == my_adc0) {
+    uint8_t adc_battery = Adc.battery;
+    if (json) {
+
+      ResponseAppend_P(JSON_SNS_BATTERY, "ANALOG", adc_battery);
+#ifdef USE_WEBSERVER
+    } else {
+      WSContentSend_PD(HTTP_SNS_BATTERY, "", adc_battery);
+#endif  // USE_WEBSERVER
+    }
+  }
+
 }
 
 /*********************************************************************************************\
@@ -343,7 +377,8 @@ void CmndAdcParam(void)
     if ((ADC0_TEMP == XdrvMailbox.payload) ||
         (ADC0_LIGHT == XdrvMailbox.payload) ||
         (ADC0_MOIST == XdrvMailbox.payload) ||
-        (ADC0_CT_POWER == XdrvMailbox.payload)) {
+        (ADC0_CT_POWER == XdrvMailbox.payload) ||
+        (ADC0_BATTERY == XdrvMailbox.payload)) {
       if (strstr(XdrvMailbox.data, ",") != nullptr) {  // Process parameter entry
         char sub_string[XdrvMailbox.data_len +1];
         // AdcParam 2, 32000, 10000, 3350
@@ -404,7 +439,8 @@ bool Xsns02(uint8_t function)
           (ADC0_TEMP == my_adc0) ||
           (ADC0_LIGHT == my_adc0) ||
           (ADC0_MOIST == my_adc0) ||
-          (ADC0_CT_POWER == my_adc0)) {
+          (ADC0_CT_POWER == my_adc0) ||
+          (ADC0_BATTERY == my_adc0)) {
         switch (function) {
 #ifdef USE_RULES
           case FUNC_EVERY_250_MSECOND:

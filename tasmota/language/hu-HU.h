@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "mint"
 #define D_AUTO "AUTO"
+#define D_BATTERY "Battery"
 #define D_BLINK "Villogás"
 #define D_BLINKOFF "Villogás ki"
 #define D_BOOT_COUNT "Újraindulások száma"

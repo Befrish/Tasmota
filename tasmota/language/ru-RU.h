@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "как"
 #define D_AUTO "АВТО"
+#define D_BATTERY "Battery"
 #define D_BLINK "Мигать"
 #define D_BLINKOFF "Не Мигать"
 #define D_BOOT_COUNT "Количество загрузок"

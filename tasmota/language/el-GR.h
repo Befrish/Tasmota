@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "ως"
 #define D_AUTO "ΑΥΤΟΜΑΤΟ"
+#define D_BATTERY "Battery"
 #define D_BLINK "Blink"
 #define D_BLINKOFF "BlinkOff"
 #define D_BOOT_COUNT "Καταμέτρηση εκκινήσεων"

@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "jako"
 #define D_AUTO "AUTO"
+#define D_BATTERY "Battery"
 #define D_BLINK "Blikání"
 #define D_BLINKOFF "BlikáníVyp"
 #define D_BOOT_COUNT "Počítadlo spuštění"

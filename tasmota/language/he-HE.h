@@ -56,6 +56,7 @@
 #define D_AP "AP"                    // Access Point
 #define D_AS "-כ"
 #define D_AUTO "אוטומטי"
+#define D_BATTERY "Battery"
 #define D_BLINK "מהבהב"
 #define D_BLINKOFF "כיבוי היבהוב"
 #define D_BOOT_COUNT "מונה הפעלה מחדש"

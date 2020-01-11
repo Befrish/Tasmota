@@ -56,6 +56,7 @@
 #define D_AP "Точка доступу"        // Access Point
 #define D_AS "як"
 #define D_AUTO "АВТО"
+#define D_BATTERY "Battery"
 #define D_BLINK "Блимати"
 #define D_BLINKOFF "Не блимати"
 #define D_BOOT_COUNT "К-сть завант."
