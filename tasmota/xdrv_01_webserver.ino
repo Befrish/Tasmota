@@ -187,7 +187,8 @@ const char HTTP_SCRIPT_CONSOL[] PROGMEM =
       "c=eb('c1');"
       "o='&c1='+encodeURIComponent(c.value);"
       "c.value='';"
-      "t.scrollTop=sn;"
+      "t.scrollTop=99999;"
+      "sn=t.scrollTop;"
     "}"
     "if(t.scrollTop>=sn){"                // User scrolled back so no updates
       "if(x!=null){x.abort();}"           // Abort if no response within 2 seconds (happens on restart 1)
@@ -341,7 +342,7 @@ const char HTTP_HEAD_STYLE1[] PROGMEM =
   "input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}"
   "input[type=range]{width:99%%;}"
   "select{width:100%%;background:#%06x;color:#%06x;}"  // COLOR_INPUT, COLOR_INPUT_TEXT
-  "textarea{resize:none;width:98%%;height:318px;padding:5px;overflow:auto;background:#%06x;color:#%06x;}"  // COLOR_CONSOLE, COLOR_CONSOLE_TEXT
+  "textarea{resize:vertical;width:98%%;height:318px;padding:5px;overflow:auto;background:#%06x;color:#%06x;}"  // COLOR_CONSOLE, COLOR_CONSOLE_TEXT
   "body{text-align:center;font-family:verdana,sans-serif;background:#%06x;}"  // COLOR_BACKGROUND
   "td{padding:0px;}";
 const char HTTP_HEAD_STYLE2[] PROGMEM =
@@ -1123,7 +1124,7 @@ void HandleRoot(void)
         int32_t ShutterWebButton;
         if (ShutterWebButton = IsShutterWebButton(idx)) {
           WSContentSend_P(HTTP_DEVICE_CONTROL, 100 / devices_present, idx,
-            (set_button) ? SettingsText(SET_BUTTON1 + idx -1) : (ShutterWebButton>0) ? "▲" : "▼",
+            (set_button) ? SettingsText(SET_BUTTON1 + idx -1) : ((Settings.shutter_options[abs(ShutterWebButton)-1] & 2) /* is locked */ ? "-" : ((ShutterWebButton>0) ? "▲" : "▼")),
             "");
           continue;
         }
@@ -1212,7 +1213,6 @@ bool HandleRootStatusRefresh(void)
       int32_t ShutterWebButton;
       if (ShutterWebButton = IsShutterWebButton(device)) {
         snprintf_P(svalue, sizeof(svalue), PSTR("ShutterPosition%d %s"), abs(ShutterWebButton), (ShutterWebButton>0) ? PSTR(D_CMND_SHUTTER_TOGGLEUP) : PSTR(D_CMND_SHUTTER_TOGGLEDOWN));
-        AddLog_P2(LOG_LEVEL_INFO, PSTR("SHT: WebButton %d, %s"), ShutterWebButton, svalue);
         ExecuteWebCommand(svalue, SRC_WEBGUI);
       } else {
 #endif  // USE_SHUTTER
@@ -2906,11 +2906,7 @@ void CmndWebButton(void)
 {
   if ((XdrvMailbox.index > 0) && (XdrvMailbox.index <= MAX_BUTTON_TEXT)) {
     if (!XdrvMailbox.usridx) {
-      mqtt_data[0] = '\0';
-      for (uint32_t i = 0; i < MAX_BUTTON_TEXT; i++) {
-        ResponseAppend_P(PSTR("%c\"WebButton%d\":\"%s\""), (i) ? ',' : '{', i +1, SettingsText(SET_BUTTON1 +i));
-      }
-      ResponseJsonEnd();
+      ResponseCmndAll(SET_BUTTON1, MAX_BUTTON_TEXT);
     } else {
       if (XdrvMailbox.data_len > 0) {
         SettingsUpdateText(SET_BUTTON1 + XdrvMailbox.index -1, ('"' == XdrvMailbox.data[0]) ? "" : XdrvMailbox.data);

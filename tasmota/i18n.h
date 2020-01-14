@@ -517,6 +517,8 @@
 #define D_CMND_SHUTTER_MOTORDELAY "MotorDelay"
 #define D_CMND_SHUTTER_FREQUENCY "Frequency"
 #define D_CMND_SHUTTER_BUTTON "Button"
+#define D_CMND_SHUTTER_LOCK "Lock"
+#define D_CMND_SHUTTER_ENABLEENDSTOPTIME "EnableEndStopTime"
 
 // Commands xdrv_32_hotplug.ino
 #define D_CMND_HOTPLUG "HotPlug"
