@@ -414,6 +414,7 @@ enum SupportedModules {
   BEFRISH_THS280,
   BEFRISH_THSB280,
   BEFRISH_THS2302,
+  SONOFF_S2X_DHT22,
   MAXMODULE};
 
 #define USER_MODULE        255
@@ -870,7 +871,8 @@ const uint8_t kModuleNiceList[] PROGMEM = {
   WEMOS,
   BEFRISH_THS280,      // Befrish THS280
   BEFRISH_THSB280,     // Befrish THSB280
-  BEFRISH_THS2302      // Befrish THSB2302
+  BEFRISH_THS2302,     // Befrish THSB2302
+  SONOFF_S2X_DHT22     // Sonoff Socket Relay Devices with DHT22
 };
 
 // Default module settings
@@ -2240,7 +2242,7 @@ const mytmplt kModules[MAXMODULE] PROGMEM = {
                        // (ESP8266 + AM2302)
      0,                // GPIO00 Button
      0,                // GPIO01 Serial RXD and Optional sensor
-     GPIO_DHT22,       // GPIO02 Only available on newer Sonoff Basic R2 V1
+     0,                // GPIO02 Only available on newer Sonoff Basic R2 V1
      0,                // GPIO03 Serial TXD and Optional sensor
      0,                // GPIO04 Optional sensor
      0,                // GPIO05
@@ -2253,9 +2255,25 @@ const mytmplt kModules[MAXMODULE] PROGMEM = {
      0,                // GPIO12 Red Led and Relay (0 = Off, 1 = On)
      0,                // GPIO13 Green Led (0 = On, 1 = Off) - Link and Power status
      0,                // GPIO14 Optional sensor
-     0,                // GPIO15
+     GPIO_DHT22,       // GPIO15
      0,                // GPIO16
      0                 // ADC0 Analog input
+  },
+  { "S2X DHT22",       // SONOFF_S2X - Sonoff S20, S22 and S26 Smart Socket (ESP8266)
+     GPIO_KEY1,        // GPIO00 Button
+     GPIO_USER,        // GPIO01 Serial RXD and Optional sensor
+     GPIO_USER,        // GPIO02 Optional sensor
+     GPIO_DHT22,       // GPIO03 Serial TXD and Optional sensor
+     0, 0,
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09 (SD_DATA2 Flash QIO or ESP8285)
+     0,                // GPIO10 (SD_DATA3 Flash QIO or ESP8285)
+                       // GPIO11 (SD_CMD   Flash)
+     GPIO_REL1,        // GPIO12 Red Led and Relay (0 = Off, 1 = On) - Link and Power status
+     GPIO_LED1_INV,    // GPIO13 Green/Blue Led (0 = On, 1 = Off)
+     0, 0, 0, 0
   }
 };
 

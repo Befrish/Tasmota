@@ -606,8 +606,18 @@ char TempUnit(void)
 
 float ConvertHumidity(float h)
 {
+  float result = h;
+
   global_update = uptime;
   global_humidity = h;
+
+  result = h + HUMIDITY_OFFSET
+  if (result < 0) {
+    result = 0;
+  }
+  if (result > 100) {
+    result = 100;
+  }
 
   return h;
 }
