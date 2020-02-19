@@ -611,7 +611,7 @@ float ConvertHumidity(float h)
   global_update = uptime;
   global_humidity = h;
 
-  result = h + HUMIDITY_OFFSET
+  result = h + HUMIDITY_OFFSET;
   if (result < 0) {
     result = 0;
   }
@@ -619,7 +619,7 @@ float ConvertHumidity(float h)
     result = 100;
   }
 
-  return h;
+  return result;
 }
 
 float ConvertPressure(float p)
