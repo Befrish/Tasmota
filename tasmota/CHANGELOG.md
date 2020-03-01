@@ -1,10 +1,30 @@
 ## Unreleased (development)
 
+### 8.1.0.10 20200227
+
+- Change default my_user_config.h driver and sensor support removing most sensors and adding most drivers
+- Change IRremoteESP8266 library updated to v2.7.4
+- Change switchmode 6 according to issue 7778 (#7831)
+- Add support for Jarolift rollers by Keeloq algorithm
+- Add Zigbee features and improvements and remove support for Zigbee commands starting with ``Zigbee...``
+- Add support for MaxBotix HRXL-MaxSonar ultrasonic range finders by Jon Little (#7814)
+
+### 8.1.0.9 20200220
+
+- Revert most wifi connectivity changes introduced in 8.1.0.5 (#7746, #7602, #7621)
+- Fix Zigbee auto-increment transaction number (#7757)
+- Add initial support for Sensors AHT10 and AHT15 by Martin Wagner (#7596)
+- Add support for Wemos Motor Shield V1 by Denis Sborets (#7764)
+- Add Zigbee enhanced commands decoding, added ``ZbPing``
+- Add commands ``SetOption85 0/1`` and ``DevGroupShare`` supporting UDP Group command using ``GroupTopic`` without MQTT by Paul Diem (#7790)
+- Add support for Martin Jerry/acenx/Tessan/NTONPOWER SD0x PWM dimmer switches by Paul Diem (#7791)
+
 ### 8.1.0.8 20200212
 
 - Change MQTT message size with additional 200 characters
 - Change some wifi code to attempt faster connection (#7621)
 - Change display of some date and time messages from "Wed Feb 19 10:45:12 2020" to "2020-02-19T10:45:12"
+- Fix relation between RSSI and signal strength
 - Add another new DHT driver based on ESPEasy. The old driver can still be used using define USE_DHT_OLD. The previous new driver can be used with define USE_DHT_V2 (#7717)
 
 ### 8.1.0.7 20200210

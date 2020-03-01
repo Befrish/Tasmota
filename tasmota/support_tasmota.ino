@@ -541,6 +541,9 @@ void ExecuteCommandPower(uint32_t device, uint32_t state, uint32_t source)
     case POWER_TOGGLE:
       power ^= mask;
     }
+#ifdef USE_DEVICE_GROUPS
+    if (SRC_REMOTE != source && SRC_RETRY != source) SendLocalDeviceGroupMessage(DGR_MSGTYP_UPDATE, DGR_ITEM_POWER, power);
+#endif  // USE_DEVICE_GROUPS
     SetDevicePower(power, source);
 #ifdef USE_DOMOTICZ
     DomoticzUpdatePowerState(device);
@@ -637,6 +640,12 @@ void MqttShowState(void)
         break;
       }
 #endif  // USE_SONOFF_IFAN
+#ifdef USE_PWM_DIMMER
+      if (PWM_DIMMER == my_module_type) {
+        ResponseAppend_P(PSTR(",\"" D_CMND_DIMMER "\":%d,\"" D_CMND_FADE "\":\"%s\",\"" D_CMND_SPEED "\":%d"),
+          Settings.light_dimmer, GetStateText(Settings.light_fade), Settings.light_speed);
+      }
+#endif  // USE_PWM_DIMMER
 #ifdef USE_LIGHT
     }
 #endif
@@ -647,9 +656,10 @@ void MqttShowState(void)
     MqttShowPWMState();
   }
 
+  int32_t rssi = WiFi.RSSI();
   ResponseAppend_P(PSTR(",\"" D_JSON_WIFI "\":{\"" D_JSON_AP "\":%d,\"" D_JSON_SSID "\":\"%s\",\"" D_JSON_BSSID "\":\"%s\",\"" D_JSON_CHANNEL "\":%d,\"" D_JSON_RSSI "\":%d,\"" D_JSON_SIGNAL "\":%d,\"" D_JSON_LINK_COUNT "\":%d,\"" D_JSON_DOWNTIME "\":\"%s\"}}"),
     Settings.sta_active +1, SettingsText(SET_STASSID1 + Settings.sta_active), WiFi.BSSIDstr().c_str(), WiFi.channel(),
-    WifiGetRssiAsQuality(WiFi.RSSI()), WiFi.RSSI(), WifiLinkCount(), WifiDowntime().c_str());
+    WifiGetRssiAsQuality(rssi), rssi, WifiLinkCount(), WifiDowntime().c_str());
 }
 
 void MqttPublishTeleState(void)
@@ -777,6 +787,7 @@ void PerformEverySecond(void)
 #endif  // USE_RULES
         }
 
+        XsnsCall(FUNC_AFTER_TELEPERIOD);
         XdrvCall(FUNC_AFTER_TELEPERIOD);
       }
     }

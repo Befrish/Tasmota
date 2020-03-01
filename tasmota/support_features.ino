@@ -367,7 +367,7 @@ void GetFeatures(void)
 #ifdef USE_PZEM_DC
   feature_sns2 |= 0x00001000;  // xnrg_06_pzem_dc.ino
 #endif
-#ifdef USE_TX20_WIND_SENSOR
+#if defined(USE_TX20_WIND_SENSOR) || defined(USE_TX23_WIND_SENSOR)
   feature_sns2 |= 0x00002000;  // xsns_35_tx20.ino
 #endif
 #ifdef USE_MGC3130
@@ -513,19 +513,32 @@ void GetFeatures(void)
 #ifdef USE_LE01MR
   feature5 |= 0x08000000;  // xnrg_13_fif_le01mr.ino
 #endif
-
-//  feature5 |= 0x10000000;
-//  feature5 |= 0x20000000;
-//  feature5 |= 0x40000000;
-//  feature5 |= 0x80000000;
+#ifdef USE_AHT1x
+  feature5 |= 0x10000000;  // xsns_63_aht1x.ino
+#endif
+#ifdef USE_WEMOS_MOTOR_V1
+  feature5 |= 0x20000000;  // xdrv_34_wemos_motor_v1.ino
+#endif
+#ifdef USE_DEVICE_GROUPS
+  feature5 |= 0x40000000;  // support_device_groups.ino
+#endif
+#ifdef USE_PWM_DIMMER
+  feature5 |= 0x80000000;  // xdrv_35_pwm_dimmer
+#endif
 
 /*********************************************************************************************/
 
   feature6 = 0x00000000;
 
-//  feature6 |= 0x00000001;
-//  feature6 |= 0x00000002;
-//  feature6 |= 0x00000004;
+#ifdef USE_KEELOQ
+  feature6 |= 0x00000001;  // xdrv_36_keeloq.ino
+#endif
+#ifdef USE_HRXL
+  feature6 |= 0x00000002;  // xsns_64_hrxl.ino
+#endif
+#ifdef USE_SONOFF_D1
+  feature6 |= 0x00000004;
+#endif
 //  feature6 |= 0x00000008;
 
 //  feature6 |= 0x00000010;

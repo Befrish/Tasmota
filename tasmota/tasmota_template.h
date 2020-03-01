@@ -128,7 +128,7 @@ enum UserSelectablePins {
   GPIO_SDS0X1_TX,      // Nova Fitness SDS011 Serial interface
   GPIO_HX711_SCK,      // HX711 Load Cell clock
   GPIO_HX711_DAT,      // HX711 Load Cell data
-  GPIO_TX20_TXD_BLACK, // TX20 Transmission Pin
+  GPIO_TX2X_TXD_BLACK, // TX20/TX23 Transmission Pin
   GPIO_RFSEND,         // RF transmitter
   GPIO_RFRECV,         // RF receiver
   GPIO_TUYA_TX,        // Tuya Serial interface
@@ -222,6 +222,9 @@ enum UserSelectablePins {
   GPIO_HM10_TX,        // HM10-BLE-Mijia-bridge serial interface
   GPIO_LE01MR_RX,      // F&F LE-01MR energy meter
   GPIO_LE01MR_TX,      // F&F LE-01MR energy meter
+  GPIO_CC1101_GDO0,    // CC1101 pin for RX
+  GPIO_CC1101_GDO2,    // CC1101 pin for RX
+  GPIO_HRXL_RX,       // Data from MaxBotix HRXL sonar range sensor
   GPIO_SENSOR_END };
 
 // Programmer selectable GPIO functionality
@@ -267,7 +270,7 @@ const char kSensorNames[] PROGMEM =
   D_SENSOR_PZEM016_RX "|" D_SENSOR_PZEM017_RX "|"
   D_SENSOR_DFR562 "|" D_SENSOR_SDS0X1_TX "|"
   D_SENSOR_HX711_SCK "|" D_SENSOR_HX711_DAT "|"
-  D_SENSOR_TX20_TX "|"
+  D_SENSOR_TX2X_TX "|"
   D_SENSOR_RFSEND "|" D_SENSOR_RFRECV "|"
   D_SENSOR_TUYA_TX "|" D_SENSOR_TUYA_RX "|"
   D_SENSOR_MGC3130_XFER "|" D_SENSOR_MGC3130_RESET "|"
@@ -305,7 +308,9 @@ const char kSensorNames[] PROGMEM =
   D_SENSOR_GPS_RX "|" D_SENSOR_GPS_TX "|"
   D_SENSOR_DS18X20 "o|" D_SENSOR_DHT11 "o|"
   D_SENSOR_HM10_RX "|" D_SENSOR_HM10_TX "|"
-  D_SENSOR_LE01MR_RX "|" D_SENSOR_LE01MR_TX
+  D_SENSOR_LE01MR_RX "|" D_SENSOR_LE01MR_TX "|"
+  D_SENSOR_CC1101_GDO0 "|" D_SENSOR_CC1101_GDO2 "|"
+  D_SENSOR_HRXL_RX
   ;
 
 const char kSensorNamesFixed[] PROGMEM =
@@ -420,6 +425,8 @@ enum SupportedModules {
   SONOFF_L1,
   SONOFF_IFAN03,
   EXS_DIMMER,
+  PWM_DIMMER,
+  SONOFF_D1,
   BEFRISH_THS280,
   BEFRISH_THSB280,
   BEFRISH_THS2302,
@@ -727,8 +734,8 @@ const uint8_t kGpioNiceList[] PROGMEM = {
 #ifdef USE_PMS5003
   GPIO_PMS5003,        // Plantower PMS5003 Serial interface
 #endif
-#ifdef USE_TX20_WIND_SENSOR
-  GPIO_TX20_TXD_BLACK, // TX20 Transmission Pin
+#if defined(USE_TX20_WIND_SENSOR) || defined(USE_TX23_WIND_SENSOR)
+  GPIO_TX2X_TXD_BLACK, // TX20/TX23 Transmission Pin
 #endif
 #ifdef USE_MP3_PLAYER
   GPIO_MP3_DFR562,     // RB-DFR-562, DFPlayer Mini MP3 Player Serial interface
@@ -794,7 +801,13 @@ const uint8_t kGpioNiceList[] PROGMEM = {
 #ifdef USE_DEEPSLEEP
   GPIO_DEEPSLEEP,
 #endif
-
+#ifdef USE_KEELOQ
+  GPIO_CC1101_GDO0,    // CC1101 pin for RX
+  GPIO_CC1101_GDO2,    // CC1101 pin for RX
+#endif
+#ifdef USE_HRXL
+  GPIO_HRXL_RX,
+#endif
 };
 
 const uint8_t kModuleNiceList[] PROGMEM = {
@@ -813,6 +826,9 @@ const uint8_t kModuleNiceList[] PROGMEM = {
   SONOFF_T11,
   SONOFF_T12,
   SONOFF_T13,
+#ifdef USE_SONOFF_D1
+  SONOFF_D1,           // Sonoff D1
+#endif
   SONOFF_LED,          // Sonoff Light Devices
   SONOFF_BN,
 #ifdef USE_SONOFF_L1
@@ -870,6 +886,9 @@ const uint8_t kModuleNiceList[] PROGMEM = {
 #endif
 #ifdef USE_EXS_DIMMER
   EXS_DIMMER,
+#endif
+#ifdef USE_PWM_DIMMER
+  PWM_DIMMER,
 #endif
   H801,                // Light Devices
   MAGICHOME,
@@ -2214,6 +2233,50 @@ const mytmplt kModules[MAXMODULE] PROGMEM = {
      GPIO_USER,        // GPIO14
      0,                // GPIO15
      0, 0
+  },
+  { "PWM Dimmer",      // PWM_DIMMER - Support for Martin Jerry/acenx/Tessan/NTONPOWER SD0x PWM
+                       // dimmer switches. The brightness of the load for these dimmers is
+                       // controlled by a PWM GPIO pin. There are typically power, up & down
+                       // buttons and 4 LED's. Examples are:
+                       // https://www.amazon.com/dp/B07FXYSVR1
+                       // https://www.amazon.com/dp/B07V26Q3VD
+                       // https://www.amazon.com/dp/B07K67D43J
+                       // https://www.amazon.com/dp/B07TTGFWFM
+     GPIO_KEY3,        // GPIO00 Up button
+     GPIO_KEY2,        // GPIO01 Down button
+     0,                // GPIO02
+     GPIO_LED4_INV,    // GPIO03 Level 5 LED
+     GPIO_LEDLNK_INV,  // GPIO04 LED Link
+     GPIO_LED3_INV,    // GPIO05 Level 4 LED
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09 (SD_DATA2 Flash QIO or ESP8285)
+     0,                // GPIO10 (SD_DATA3 Flash QIO or ESP8285)
+                       // GPIO11 (SD_CMD   Flash)
+     GPIO_LED2_INV,    // GPIO12 Level 3 LED
+     GPIO_PWM1,        // GPIO13 Dimmer PWM
+     GPIO_LED1_INV,    // GPIO12 Level 2 LED
+     GPIO_KEY1_INV,    // GPIO15 Power button
+     GPIO_REL1_INV,    // GPIO16 Power relay/Level 1 LED
+     0
+  },
+  { "Sonoff D1",       // SONOFF_D1 - Sonoff D1 RF Dimmer 433 (ESP8285)
+     GPIO_USER,        // GPIO00 Pad
+     GPIO_TXD,         // GPIO01 D1 control
+     0,                // GPIO02
+     GPIO_RXD,         // GPIO03 D1 control
+     0,                // GPIO04 DEBUG_RX
+     0,                // GPIO05 DEBUG_TX
+                       // GPIO06 (SD_CLK   Flash)
+                       // GPIO07 (SD_DATA0 Flash QIO/DIO/DOUT)
+                       // GPIO08 (SD_DATA1 Flash QIO/DIO/DOUT)
+     0,                // GPIO09
+     0,                // GPIO10
+                       // GPIO11 (SD_CMD   Flash)
+     0,                // GPIO12
+     GPIO_LED1_INV,    // GPIO13 WiFi Blue Led - Link and Power status
+     0, 0, 0, 0
   },
   { "THS280",          // Befrish Temperature-Humidity-Sensor
                        // (ESP8266 + BME280)

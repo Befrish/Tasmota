@@ -290,6 +290,7 @@
 #define D_CMND_WIFIPOWER "WifiPower"
 #define D_CMND_I2CSCAN "I2CScan"
 #define D_CMND_I2CDRIVER "I2CDriver"
+#define D_CMND_DEVGROUP_SHARE "DevGroupShare"
 #define D_CMND_SERIALSEND "SerialSend"
 #define D_CMND_SERIALDELIMITER "SerialDelimiter"
 #define D_CMND_BAUDRATE "Baudrate"
@@ -470,10 +471,10 @@
 
 // Commands xdrv_23_zigbee.ino
 #define D_PRFX_ZB "Zb"
-#define D_PRFX_ZIGBEE "Zigbee"
 #define D_ZIGBEE_NOT_STARTED "Zigbee not started (yet)"
 #define D_CMND_ZIGBEE_PERMITJOIN "PermitJoin"
 #define D_CMND_ZIGBEE_STATUS "Status"
+  #define D_JSON_ZIGBEE_Status "Status"
 #define D_CMND_ZIGBEE_RESET "Reset"
   #define D_JSON_ZIGBEE_CC2530 "CC2530"
 #define D_CMND_ZIGBEEZNPRECEIVE "ZNPReceive"      // only for debug
@@ -486,16 +487,27 @@
   #define D_JSON_ZIGBEE_DEVICE "Device"
   #define D_JSON_ZIGBEE_NAME "Name"
 #define D_CMND_ZIGBEE_NAME "Name"
+#define D_CMND_ZIGBEE_MODELID "ModelId"
+  #define D_JSON_ZIGBEE_MODELID "ModelId"
 #define D_CMND_ZIGBEE_PROBE "Probe"
 #define D_CMND_ZIGBEE_FORGET "Forget"
 #define D_CMND_ZIGBEE_SAVE "Save"
   #define D_CMND_ZIGBEE_LINKQUALITY "LinkQuality"
+  #define D_CMND_ZIGBEE_ENDPOINT "Endpoint"
+  #define D_CMND_ZIGBEE_GROUP "Group"
 #define D_CMND_ZIGBEE_READ "Read"
 #define D_CMND_ZIGBEE_SEND "Send"
   #define D_JSON_ZIGBEE_ZCL_SENT "ZbZCLSent"
 #define D_JSON_ZIGBEE_RECEIVED "ZbReceived"
-#define D_JSON_ZIGBEE_RECEIVED_LEGACY "ZigbeeReceived"
 #define D_CMND_ZIGBEE_BIND "Bind"
+  #define D_JSON_ZIGBEE_BIND "ZbBind"
+#define D_CMND_ZIGBEE_PING "Ping"
+  #define D_JSON_ZIGBEE_PING "ZbPing"
+  #define D_JSON_ZIGBEE_IEEE "IEEEAddr"
+#define D_JSON_ZIGBEE_RESPONSE "ZbResponse"
+  #define D_JSON_ZIGBEE_CMD "Command"
+  #define D_JSON_ZIGBEE_STATUS "Status"
+  #define D_JSON_ZIGBEE_STATUS_MSG "StatusMessage"
 
 // Commands xdrv_25_A4988_Stepper.ino
 #define D_CMND_MOTOR "MOTOR"
@@ -531,6 +543,12 @@
 
 // Commands xdrv_32_hotplug.ino
 #define D_CMND_HOTPLUG "HotPlug"
+
+// Commands xdrv_34_pwm_dimmer.ino
+#ifdef USE_PWM_DIMMER
+#define D_CMND_BRI_MIN "BriMin"
+#define D_CMND_BRI_PRESET "BriPreset"
+#endif
 
 // Commands xsns_02_analog.ino
 #define D_CMND_ADCPARAM "AdcParam"
