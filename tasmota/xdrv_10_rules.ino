@@ -289,8 +289,8 @@ bool RulesRuleMatch(uint8_t rule_set, String &event, String &rule)
     str_value = (*obj)[rule_name];                     // "CURRENT"
   }
 
-//  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("RUL: Task %s, Name %s, Value |%s|, TrigCnt %d, TrigSt %d, Source %s, Json %s"),
-//    rule_task.c_str(), rule_name.c_str(), rule_svalue, Rules.trigger_count[rule_set], bitRead(Rules.triggers[rule_set], Rules.trigger_count[rule_set]), event.c_str(), (str_value) ? str_value : "none");
+//AddLog_P2(LOG_LEVEL_DEBUG, PSTR("RUL: Task %s, Name %s, Value |%s|, TrigCnt %d, TrigSt %d, Source %s, Json %s"),
+//  rule_task.c_str(), rule_name.c_str(), rule_svalue, Rules.trigger_count[rule_set], bitRead(Rules.triggers[rule_set], Rules.trigger_count[rule_set]), event.c_str(), (str_value) ? str_value : "none");
 
   Rules.event_value = str_value;                       // Prepare %value%
 
@@ -330,6 +330,9 @@ bool RulesRuleMatch(uint8_t rule_set, String &event, String &rule)
     }
   } else match = true;
 
+//AddLog_P2(LOG_LEVEL_DEBUG, PSTR("RUL: Match 1 %d"), match);
+
+
   if (bitRead(Settings.rule_once, rule_set)) {
     if (match) {                                       // Only allow match state changes
       if (!bitRead(Rules.triggers[rule_set], Rules.trigger_count[rule_set])) {
@@ -341,6 +344,8 @@ bool RulesRuleMatch(uint8_t rule_set, String &event, String &rule)
       bitClear(Rules.triggers[rule_set], Rules.trigger_count[rule_set]);
     }
   }
+
+//AddLog_P2(LOG_LEVEL_DEBUG, PSTR("RUL: Match 2 %d"), match);
 
   return match;
 }
@@ -471,6 +476,7 @@ bool RuleSetProcess(uint8_t rule_set, String &event_saved)
         RulesVarReplace(commands, stemp, SettingsText(SET_MEM1 +i));
       }
       RulesVarReplace(commands, F("%TIME%"), String(MinutesPastMidnight()));
+      RulesVarReplace(commands, F("%UTCTIME%"), String(UtcTime()));
       RulesVarReplace(commands, F("%UPTIME%"), String(MinutesUptime()));
       RulesVarReplace(commands, F("%TIMESTAMP%"), GetDateAndTime(DT_LOCAL));
       RulesVarReplace(commands, F("%TOPIC%"), SettingsText(SET_MQTT_TOPIC));
@@ -574,9 +580,9 @@ void RulesEvery50ms(void)
         // Boot time SWITCHES Status
         for (uint32_t i = 0; i < MAX_SWITCHES; i++) {
 #ifdef USE_TM1638
-          if ((pin[GPIO_SWT1 +i] < 99) || ((pin[GPIO_TM16CLK] < 99) && (pin[GPIO_TM16DIO] < 99) && (pin[GPIO_TM16STB] < 99))) {
+          if (PinUsed(GPIO_SWT1, i) || (PinUsed(GPIO_TM16CLK) && PinUsed(GPIO_TM16DIO) && PinUsed(GPIO_TM16STB))) {
 #else
-          if (pin[GPIO_SWT1 +i] < 99) {
+          if (PinUsed(GPIO_SWT1, i)) {
 #endif  // USE_TM1638
             snprintf_P(json_event, sizeof(json_event), PSTR("{\"" D_JSON_SWITCH "%d\":{\"Boot\":%d}}"), i +1, (SwitchState(i)));
             RulesProcessEvent(json_event);
@@ -1791,8 +1797,11 @@ void CmndEvent(void)
 {
   if (XdrvMailbox.data_len > 0) {
     strlcpy(Rules.event_data, XdrvMailbox.data, sizeof(Rules.event_data));
+#ifdef USE_DEVICE_GROUPS
+    SendLocalDeviceGroupMessage(DGR_MSGTYP_UPDATE, DGR_ITEM_EVENT, XdrvMailbox.data);
+#endif  // USE_DEVICE_GROUPS
   }
-  ResponseCmndDone();
+  if (XdrvMailbox.command) ResponseCmndDone();
 }
 
 void CmndVariable(void)

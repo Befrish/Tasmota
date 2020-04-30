@@ -17,166 +17,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DOMOTICZ_UPDATE_TIMER
-#define DOMOTICZ_UPDATE_TIMER       0          // [DomoticzUpdateTimer] Send relay status (0 = disable, 1 - 3600 seconds) (Optional)
-#endif
-
-#ifndef EMULATION
-#define EMULATION                   EMUL_NONE  // [Emulation] Select Belkin WeMo (single relay/light) or Hue Bridge emulation (multi relay/light) (EMUL_NONE, EMUL_WEMO or EMUL_HUE)
-#endif
-
-#ifndef MTX_ADDRESS1                           // Add Display Support for up to eigth Matrices
-#define MTX_ADDRESS1                0
-#endif
-#ifndef MTX_ADDRESS2
-#define MTX_ADDRESS2                0
-#endif
-#ifndef MTX_ADDRESS3
-#define MTX_ADDRESS3                0
-#endif
-#ifndef MTX_ADDRESS4
-#define MTX_ADDRESS4                0
-#endif
-#ifndef MTX_ADDRESS5
-#define MTX_ADDRESS5                0
-#endif
-#ifndef MTX_ADDRESS6
-#define MTX_ADDRESS6                0
-#endif
-#ifndef MTX_ADDRESS7
-#define MTX_ADDRESS7                0
-#endif
-#ifndef MTX_ADDRESS8
-#define MTX_ADDRESS8                0
-#endif
-
-#ifndef HOME_ASSISTANT_DISCOVERY_ENABLE
-#define HOME_ASSISTANT_DISCOVERY_ENABLE 0
-#endif
-
-#ifndef LATITUDE
-#define LATITUDE                    48.858360  // [Latitude] Your location to be used with sunrise and sunset
-#endif
-#ifndef LONGITUDE
-#define LONGITUDE                   2.294442   // [Longitude] Your location to be used with sunrise and sunset
-#endif
-
-#ifndef WORKING_PERIOD
-#define WORKING_PERIOD              5          // Working period of the SDS Sensor, Takes a reading every X Minutes
-#endif
-
-#ifndef COLOR_TEXT
-#define COLOR_TEXT                  "#000"     // Global text color - Black
-#endif
-#ifndef COLOR_BACKGROUND
-#define COLOR_BACKGROUND            "#fff"     // Global background color - White
-#endif
-#ifndef COLOR_FORM
-#define COLOR_FORM                  "#f2f2f2"  // Form background color - Greyish
-#endif
-#ifndef COLOR_INPUT_TEXT
-#define COLOR_INPUT_TEXT            "#000"     // Input text color - Black
-#endif
-#ifndef COLOR_INPUT
-#define COLOR_INPUT                 "#fff"     // Input background color - White
-#endif
-#ifndef COLOR_CONSOLE_TEXT
-#define COLOR_CONSOLE_TEXT          "#000"     // Console text color - Black
-#endif
-#ifndef COLOR_CONSOLE
-#define COLOR_CONSOLE               "#fff"     // Console background color - White
-#endif
-#ifndef COLOR_TEXT_WARNING
-#define COLOR_TEXT_WARNING          "#f00"     // Warning text color - Red
-#endif
-#ifndef COLOR_TEXT_SUCCESS
-#define COLOR_TEXT_SUCCESS          "#008000"  // Success text color - Green
-#endif
-#ifndef COLOR_BUTTON_TEXT
-#define COLOR_BUTTON_TEXT           "#fff"     // Button text color - White
-#endif
-#ifndef COLOR_BUTTON
-#define COLOR_BUTTON                "#1fa3ec"  // Button color - Blueish
-#endif
-#ifndef COLOR_BUTTON_HOVER
-#define COLOR_BUTTON_HOVER          "#0e70a4"  // Button color when hovered over - Darker blueish
-#endif
-#ifndef COLOR_BUTTON_RESET
-#define COLOR_BUTTON_RESET          "#d43535"  // Restart/Reset/Delete button color - Redish
-#endif
-#ifndef COLOR_BUTTON_RESET_HOVER
-#define COLOR_BUTTON_RESET_HOVER    "#931f1f"  // Restart/Reset/Delete button color when hovered over - Darker redish
-#endif
-#ifndef COLOR_BUTTON_SAVE
-#define COLOR_BUTTON_SAVE           "#47c266"  // Save button color - Greenish
-#endif
-#ifndef COLOR_BUTTON_SAVE_HOVER
-#define COLOR_BUTTON_SAVE_HOVER     "#5aaf6f"  // Save button color when hovered over - Darker greenish
-#endif
-#ifndef COLOR_TIMER_TAB_TEXT
-#define COLOR_TIMER_TAB_TEXT        "#fff"     // Config timer tab text color - White
-#endif
-#ifndef COLOR_TIMER_TAB_BACKGROUND
-#define COLOR_TIMER_TAB_BACKGROUND  "#999"     // Config timer tab background color - Light grey
-#endif
-#ifndef COLOR_TITLE_TEXT
-#define COLOR_TITLE_TEXT			      COLOR_TEXT // Title text color defaults to global text color either dark or light
-#endif
-#ifndef IR_RCV_MIN_UNKNOWN_SIZE
-#define IR_RCV_MIN_UNKNOWN_SIZE     6          // Set the smallest sized "UNKNOWN" message packets we actually care about (default 6, max 255)
-#endif
-#ifndef ENERGY_OVERTEMP
-#define ENERGY_OVERTEMP             90         // Overtemp in Celsius
-#endif
-#ifndef DEFAULT_DIMMER_MAX
-#define DEFAULT_DIMMER_MAX          100
-#endif
-#ifndef DEFAULT_DIMMER_MIN
-#define DEFAULT_DIMMER_MIN          0
-#endif
-#ifndef DEFAULT_LIGHT_DIMMER
-#define DEFAULT_LIGHT_DIMMER        10
-#endif
-#ifndef DEFAULT_LIGHT_COMPONENT
-#define DEFAULT_LIGHT_COMPONENT     255
-#endif
-#ifndef CORS_ENABLED_ALL
-#define CORS_ENABLED_ALL            "*"
-#endif
-
-
-enum WebColors {
-  COL_TEXT, COL_BACKGROUND, COL_FORM,
-  COL_INPUT_TEXT, COL_INPUT, COL_CONSOLE_TEXT, COL_CONSOLE,
-  COL_TEXT_WARNING, COL_TEXT_SUCCESS,
-  COL_BUTTON_TEXT, COL_BUTTON, COL_BUTTON_HOVER, COL_BUTTON_RESET, COL_BUTTON_RESET_HOVER, COL_BUTTON_SAVE, COL_BUTTON_SAVE_HOVER,
-  COL_TIMER_TAB_TEXT, COL_TIMER_TAB_BACKGROUND, COL_TITLE,
-  COL_LAST };
-
-const char kWebColors[] PROGMEM =
-  COLOR_TEXT "|" COLOR_BACKGROUND "|" COLOR_FORM "|"
-  COLOR_INPUT_TEXT "|" COLOR_INPUT "|" COLOR_CONSOLE_TEXT "|" COLOR_CONSOLE "|"
-  COLOR_TEXT_WARNING "|" COLOR_TEXT_SUCCESS "|"
-  COLOR_BUTTON_TEXT "|" COLOR_BUTTON "|" COLOR_BUTTON_HOVER "|" COLOR_BUTTON_RESET "|" COLOR_BUTTON_RESET_HOVER "|" COLOR_BUTTON_SAVE "|" COLOR_BUTTON_SAVE_HOVER "|"
-  COLOR_TIMER_TAB_TEXT "|" COLOR_TIMER_TAB_BACKGROUND "|" COLOR_TITLE_TEXT;
-
-enum TasmotaSerialConfig {
-  TS_SERIAL_5N1, TS_SERIAL_6N1, TS_SERIAL_7N1, TS_SERIAL_8N1,
-  TS_SERIAL_5N2, TS_SERIAL_6N2, TS_SERIAL_7N2, TS_SERIAL_8N2,
-  TS_SERIAL_5E1, TS_SERIAL_6E1, TS_SERIAL_7E1, TS_SERIAL_8E1,
-  TS_SERIAL_5E2, TS_SERIAL_6E2, TS_SERIAL_7E2, TS_SERIAL_8E2,
-  TS_SERIAL_5O1, TS_SERIAL_6O1, TS_SERIAL_7O1, TS_SERIAL_8O1,
-  TS_SERIAL_5O2, TS_SERIAL_6O2, TS_SERIAL_7O2, TS_SERIAL_8O2 };
-
-const uint8_t kTasmotaSerialConfig[] PROGMEM = {
-  SERIAL_5N1, SERIAL_6N1, SERIAL_7N1, SERIAL_8N1,
-  SERIAL_5N2, SERIAL_6N2, SERIAL_7N2, SERIAL_8N2,
-  SERIAL_5E1, SERIAL_6E1, SERIAL_7E1, SERIAL_8E1,
-  SERIAL_5E2, SERIAL_6E2, SERIAL_7E2, SERIAL_8E2,
-  SERIAL_5O1, SERIAL_6O1, SERIAL_7O1, SERIAL_8O1,
-  SERIAL_5O2, SERIAL_6O2, SERIAL_7O2, SERIAL_8O2
-};
-
 /*********************************************************************************************\
  * RTC memory
 \*********************************************************************************************/
@@ -190,7 +30,7 @@ uint32_t GetRtcSettingsCrc(void)
   uint32_t crc = 0;
   uint8_t *bytes = (uint8_t*)&RtcSettings;
 
-  for (uint32_t i = 0; i < sizeof(RTCMEM); i++) {
+  for (uint32_t i = 0; i < sizeof(RtcSettings); i++) {
     crc += bytes[i]*(i+1);
   }
   return crc;
@@ -200,16 +40,24 @@ void RtcSettingsSave(void)
 {
   if (GetRtcSettingsCrc() != rtc_settings_crc) {
     RtcSettings.valid = RTC_MEM_VALID;
-    ESP.rtcUserMemoryWrite(100, (uint32_t*)&RtcSettings, sizeof(RTCMEM));
+#ifdef ESP8266
+    ESP.rtcUserMemoryWrite(100, (uint32_t*)&RtcSettings, sizeof(RtcSettings));
+#else
+    RtcDataSettings = RtcSettings;
+#endif
     rtc_settings_crc = GetRtcSettingsCrc();
   }
 }
 
 void RtcSettingsLoad(void)
 {
-  ESP.rtcUserMemoryRead(100, (uint32_t*)&RtcSettings, sizeof(RTCMEM));  // 0x290
+#ifdef ESP8266
+  ESP.rtcUserMemoryRead(100, (uint32_t*)&RtcSettings, sizeof(RtcSettings));  // 0x290
+#else
+  RtcSettings = RtcDataSettings;
+#endif
   if (RtcSettings.valid != RTC_MEM_VALID) {
-    memset(&RtcSettings, 0, sizeof(RTCMEM));
+    memset(&RtcSettings, 0, sizeof(RtcSettings));
     RtcSettings.valid = RTC_MEM_VALID;
     RtcSettings.energy_kWhtoday = Settings.energy_kWhtoday;
     RtcSettings.energy_kWhtotal = Settings.energy_kWhtotal;
@@ -237,7 +85,7 @@ uint32_t GetRtcRebootCrc(void)
   uint32_t crc = 0;
   uint8_t *bytes = (uint8_t*)&RtcReboot;
 
-  for (uint32_t i = 0; i < sizeof(RTCRBT); i++) {
+  for (uint32_t i = 0; i < sizeof(RtcReboot); i++) {
     crc += bytes[i]*(i+1);
   }
   return crc;
@@ -247,7 +95,11 @@ void RtcRebootSave(void)
 {
   if (GetRtcRebootCrc() != rtc_reboot_crc) {
     RtcReboot.valid = RTC_MEM_VALID;
-    ESP.rtcUserMemoryWrite(100 - sizeof(RTCRBT), (uint32_t*)&RtcReboot, sizeof(RTCRBT));
+#ifdef ESP8266
+    ESP.rtcUserMemoryWrite(100 - sizeof(RtcReboot), (uint32_t*)&RtcReboot, sizeof(RtcReboot));
+#else
+    RtcDataReboot = RtcReboot;
+#endif
     rtc_reboot_crc = GetRtcRebootCrc();
   }
 }
@@ -260,9 +112,13 @@ void RtcRebootReset(void)
 
 void RtcRebootLoad(void)
 {
-  ESP.rtcUserMemoryRead(100 - sizeof(RTCRBT), (uint32_t*)&RtcReboot, sizeof(RTCRBT));  // 0x280
+#ifdef ESP8266
+  ESP.rtcUserMemoryRead(100 - sizeof(RtcReboot), (uint32_t*)&RtcReboot, sizeof(RtcReboot));  // 0x280
+#else
+  RtcReboot = RtcDataReboot;
+#endif
   if (RtcReboot.valid != RTC_MEM_VALID) {
-    memset(&RtcReboot, 0, sizeof(RTCRBT));
+    memset(&RtcReboot, 0, sizeof(RtcReboot));
     RtcReboot.valid = RTC_MEM_VALID;
 //    RtcReboot.fast_reboot_count = 0;  // Explicit by memset
     RtcRebootSave();
@@ -301,6 +157,8 @@ extern "C" {
 }
 #include "eboot_command.h"
 
+#ifdef ESP8266
+
 #if defined(ARDUINO_ESP8266_RELEASE_2_3_0) || defined(ARDUINO_ESP8266_RELEASE_2_4_0) || defined(ARDUINO_ESP8266_RELEASE_2_4_1) || defined(ARDUINO_ESP8266_RELEASE_2_4_2) || defined(ARDUINO_ESP8266_RELEASE_2_5_0) || defined(ARDUINO_ESP8266_RELEASE_2_5_1) || defined(ARDUINO_ESP8266_RELEASE_2_5_2)
 
 extern "C" uint32_t _SPIFFS_end;
@@ -328,6 +186,9 @@ const uint32_t SPIFFS_END = ((uint32_t)&_FS_end - 0x40200000) / SPI_FLASH_SEC_SI
 
 // Version 4.2 config = eeprom area
 const uint32_t SETTINGS_LOCATION = SPIFFS_END;  // No need for SPIFFS as it uses EEPROM area
+
+#endif  // ESP8266
+
 // Version 5.2 allow for more flash space
 const uint8_t CFG_ROTATES = 8;          // Number of flash sectors used (handles uploads)
 
@@ -341,6 +202,7 @@ uint8_t *settings_buffer = nullptr;
  */
 void SetFlashModeDout(void)
 {
+#ifdef ESP8266
   uint8_t *_buffer;
   uint32_t address;
 
@@ -358,10 +220,13 @@ void SetFlashModeDout(void)
     }
   }
   delete[] _buffer;
+#endif  // ESP8266
 }
 
 bool VersionCompatible(void)
 {
+#ifdef ESP8266
+
   if (Settings.flag3.compatibility_check) {
     return true;
   }
@@ -404,6 +269,8 @@ bool VersionCompatible(void)
     return false;
   }
 
+#endif  // ESP8266
+
   return true;
 }
 
@@ -438,7 +305,7 @@ uint16_t GetCfgCrc16(uint8_t *bytes, uint32_t size)
 uint16_t GetSettingsCrc(void)
 {
   // Fix miscalculation if previous Settings was 3584 and current Settings is 4096 between 0x06060007 and 0x0606000A
-  uint32_t size = ((Settings.version < 0x06060007) || (Settings.version > 0x0606000A)) ? 3584 : sizeof(SYSCFG);
+  uint32_t size = ((Settings.version < 0x06060007) || (Settings.version > 0x0606000A)) ? 3584 : sizeof(Settings);
   return GetCfgCrc16((uint8_t*)&Settings, size);
 }
 
@@ -458,7 +325,7 @@ uint32_t GetCfgCrc32(uint8_t *bytes, uint32_t size)
 
 uint32_t GetSettingsCrc32(void)
 {
-  return GetCfgCrc32((uint8_t*)&Settings, sizeof(SYSCFG) -4);  // Skip crc32
+  return GetCfgCrc32((uint8_t*)&Settings, sizeof(Settings) -4);  // Skip crc32
 }
 
 void SettingsSaveAll(void)
@@ -479,12 +346,16 @@ void SettingsSaveAll(void)
 
 void UpdateQuickPowerCycle(bool update)
 {
-  if (Settings.flag3.fast_power_cycle_disable) { return; }
+  if (Settings.flag3.fast_power_cycle_disable) { return; }  // SetOption65 - Disable fast power cycle detection for device reset
 
   uint32_t pc_register;
   uint32_t pc_location = SETTINGS_LOCATION - CFG_ROTATES;
 
+#ifdef ESP8266
   ESP.flashRead(pc_location * SPI_FLASH_SEC_SIZE, (uint32*)&pc_register, sizeof(pc_register));
+#else
+  QPCRead(&pc_register, sizeof(pc_register));
+#endif
   if (update && ((pc_register & 0xFFFFFFF0) == 0xFFA55AB0)) {
     uint32_t counter = ((pc_register & 0xF) << 1) & 0xF;
     if (0 == counter) {  // 4 power cycles in a row
@@ -492,16 +363,24 @@ void UpdateQuickPowerCycle(bool update)
       EspRestart();      // And restart
     } else {
       pc_register = 0xFFA55AB0 | counter;
+#ifdef ESP8266
       ESP.flashWrite(pc_location * SPI_FLASH_SEC_SIZE, (uint32*)&pc_register, sizeof(pc_register));
+#else
+      QPCWrite(&pc_register, sizeof(pc_register));
+#endif
       AddLog_P2(LOG_LEVEL_DEBUG, PSTR("QPC: Flag %02X"), counter);
     }
   }
   else if (pc_register != 0xFFA55ABF) {
     pc_register = 0xFFA55ABF;
+#ifdef ESP8266
     // Assume flash is default all ones and setting a bit to zero does not need an erase
     if (ESP.flashEraseSector(pc_location)) {
       ESP.flashWrite(pc_location * SPI_FLASH_SEC_SIZE, (uint32*)&pc_register, sizeof(pc_register));
     }
+#else
+    QPCWrite(&pc_register, sizeof(pc_register));
+#endif
     AddLog_P2(LOG_LEVEL_DEBUG, PSTR("QPC: Reset"));
   }
 }
@@ -589,6 +468,12 @@ char* SettingsText(uint32_t index)
  * Config Save - Save parameters to Flash ONLY if any parameter has changed
 \*********************************************************************************************/
 
+void UpdateBackwardCompatibility(void)
+{
+  // Perform updates for backward compatibility
+  strlcpy(Settings.user_template_name, SettingsText(SET_TEMPLATE_NAME), sizeof(Settings.user_template_name));
+}
+
 uint32_t GetSettingsAddress(void)
 {
   return settings_location * SPI_FLASH_SEC_SIZE;
@@ -605,6 +490,7 @@ void SettingsSave(uint8_t rotate)
  * stop_flash_rotate 1 = Allow only eeprom flash slot use (SetOption12 1)
  */
 #ifndef FIRMWARE_MINIMAL
+  UpdateBackwardCompatibility();
   if ((GetSettingsCrc32() != settings_crc32) || rotate) {
     if (1 == rotate) {   // Use eeprom flash slot only and disable flash rotate from now on (upgrade)
       stop_flash_rotate = 1;
@@ -627,12 +513,13 @@ void SettingsSave(uint8_t rotate)
     } else {
       Settings.cfg_timestamp++;
     }
-    Settings.cfg_size = sizeof(SYSCFG);
+    Settings.cfg_size = sizeof(Settings);
     Settings.cfg_crc = GetSettingsCrc();  // Keep for backward compatibility in case of fall-back just after upgrade
     Settings.cfg_crc32 = GetSettingsCrc32();
 
+#ifdef ESP8266
     if (ESP.flashEraseSector(settings_location)) {
-      ESP.flashWrite(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SYSCFG));
+      ESP.flashWrite(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(Settings));
     }
 
     if (!stop_flash_rotate && rotate) {
@@ -641,8 +528,11 @@ void SettingsSave(uint8_t rotate)
         delay(1);
       }
     }
-
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_CONFIG D_SAVED_TO_FLASH_AT " %X, " D_COUNT " %d, " D_BYTES " %d"), settings_location, Settings.save_flag, sizeof(SYSCFG));
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_CONFIG D_SAVED_TO_FLASH_AT " %X, " D_COUNT " %d, " D_BYTES " %d"), settings_location, Settings.save_flag, sizeof(Settings));
+#else  // ESP32
+    SettingsWrite(&Settings, sizeof(Settings));
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_CONFIG "Saved, " D_COUNT " %d, " D_BYTES " %d"), Settings.save_flag, sizeof(Settings));
+#endif  // ESP8266
 
     settings_crc32 = Settings.cfg_crc32;
   }
@@ -652,8 +542,9 @@ void SettingsSave(uint8_t rotate)
 
 void SettingsLoad(void)
 {
+#ifdef ESP8266
   // Load configuration from eeprom or one of 7 slots below if first valid load does not stop_flash_rotate
-  struct SYSCFGH {
+  struct {
     uint16_t cfg_holder;                     // 000
     uint16_t cfg_size;                       // 002
     unsigned long save_flag;                 // 004
@@ -665,8 +556,7 @@ void SettingsLoad(void)
   uint16_t cfg_holder = 0;
   for (uint32_t i = 0; i < CFG_ROTATES; i++) {
     flash_location--;
-    ESP.flashRead(flash_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SYSCFG));
-
+    ESP.flashRead(flash_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(Settings));
     bool valid = false;
     if (Settings.version > 0x06000000) {
       bool almost_valid = (Settings.cfg_crc32 == GetSettingsCrc32());
@@ -677,7 +567,7 @@ void SettingsLoad(void)
       if (almost_valid && (0 == cfg_holder)) { cfg_holder = Settings.cfg_holder; }  // At FB always active cfg_holder
       valid = (cfg_holder == Settings.cfg_holder);
     } else {
-      ESP.flashRead((flash_location -1) * SPI_FLASH_SEC_SIZE, (uint32*)&_SettingsH, sizeof(SYSCFGH));
+      ESP.flashRead((flash_location -1) * SPI_FLASH_SEC_SIZE, (uint32*)&_SettingsH, sizeof(_SettingsH));
       valid = (Settings.cfg_holder == _SettingsH.cfg_holder);
     }
     if (valid) {
@@ -689,13 +579,16 @@ void SettingsLoad(void)
         }
       }
     }
-
     delay(1);
   }
   if (settings_location > 0) {
-    ESP.flashRead(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SYSCFG));
+    ESP.flashRead(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(Settings));
     AddLog_P2(LOG_LEVEL_NONE, PSTR(D_LOG_CONFIG D_LOADED_FROM_FLASH_AT " %X, " D_COUNT " %lu"), settings_location, Settings.save_flag);
   }
+#else  // ESP32
+  SettingsRead(&Settings, sizeof(Settings));
+  AddLog_P2(LOG_LEVEL_NONE, PSTR(D_LOG_CONFIG "Loaded, " D_COUNT " %lu"), Settings.save_flag);
+#endif  // ESP8266 - ESP32
 
 #ifndef FIRMWARE_MINIMAL
   if (!settings_location || (Settings.cfg_holder != (uint16_t)CFG_HOLDER)) {  // Init defaults if cfg_holder differs from user settings in my_user_config.h
@@ -730,6 +623,7 @@ void EspErase(uint32_t start_sector, uint32_t end_sector)
   }
 }
 
+#ifdef ESP8266
 void SettingsErase(uint8_t type)
 {
   /*
@@ -784,6 +678,7 @@ void SettingsErase(uint8_t type)
   EsptoolErase(_sectorStart, _sectorEnd);                                 // Esptool - erases flash completely
 #endif  // FIRMWARE_MINIMAL
 }
+#endif  // ESP8266
 
 void SettingsSdkErase(void)
 {
@@ -804,10 +699,10 @@ void SettingsDefault(void)
 
 void SettingsDefaultSet1(void)
 {
-  memset(&Settings, 0x00, sizeof(SYSCFG));
+  memset(&Settings, 0x00, sizeof(Settings));
 
   Settings.cfg_holder = (uint16_t)CFG_HOLDER;
-  Settings.cfg_size = sizeof(SYSCFG);
+  Settings.cfg_size = sizeof(Settings);
 //  Settings.save_flag = 0;
   Settings.version = VERSION;
 //  Settings.bootcount = 0;
@@ -816,7 +711,14 @@ void SettingsDefaultSet1(void)
 
 void SettingsDefaultSet2(void)
 {
-  memset((char*)&Settings +16, 0x00, sizeof(SYSCFG) -16);
+  memset((char*)&Settings +16, 0x00, sizeof(Settings) -16);
+
+#ifdef ESP8266
+//  Settings.config_version = 0;  // ESP8266 (Has been 0 for long time)
+#endif  // ESP8266
+#ifdef ESP32
+  Settings.config_version = 1;  // ESP32
+#endif  // ESP32
 
   Settings.flag.stop_flash_rotate = APP_FLASH_CYCLE;
   Settings.flag.global_state = APP_ENABLE_LEDLINK;
@@ -839,7 +741,7 @@ void SettingsDefaultSet2(void)
   Settings.interlock[0] = 0xFF;         // Legacy support using all relays in one interlock group
   Settings.module = MODULE;
   ModuleDefault(WEMOS);
-//  for (uint32_t i = 0; i < sizeof(Settings.my_gp); i++) { Settings.my_gp.io[i] = GPIO_NONE; }
+//  for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) { Settings.my_gp.io[i] = GPIO_NONE; }
   SettingsUpdateText(SET_FRIENDLYNAME1, FRIENDLY_NAME);
   SettingsUpdateText(SET_FRIENDLYNAME2, FRIENDLY_NAME"2");
   SettingsUpdateText(SET_FRIENDLYNAME3, FRIENDLY_NAME"3");
@@ -868,6 +770,7 @@ void SettingsDefaultSet2(void)
   Settings.flag3.use_wifi_scan = WIFI_SCAN_AT_RESTART;
   Settings.flag3.use_wifi_rescan = WIFI_SCAN_REGULARLY;
   Settings.wifi_output_power = 170;
+  Settings.param[P_ARP_GRATUITOUS] = WIFI_ARP_INTERVAL;
   ParseIp(&Settings.ip_address[0], WIFI_IP_ADDRESS);
   ParseIp(&Settings.ip_address[1], WIFI_GATEWAY);
   ParseIp(&Settings.ip_address[2], WIFI_SUBNETMASK);
@@ -1044,6 +947,7 @@ void SettingsDefaultSet2(void)
   Settings.flag3.pwm_multi_channels = LIGHT_CHANNEL_MODE;
   Settings.flag3.slider_dimmer_stay_on = LIGHT_SLIDER_POWER;
   Settings.flag4.alexa_ct_range = LIGHT_ALEXA_CT_RANGE;
+  Settings.flag4.pwm_ct_mode = LIGHT_PWM_CT_MODE;
 
   Settings.pwm_frequency = PWM_FREQ;
   Settings.pwm_range = PWM_RANGE;
@@ -1181,8 +1085,10 @@ void SettingsEnableAllI2cDrivers(void)
 void SettingsDelta(void)
 {
   if (Settings.version != VERSION) {      // Fix version dependent changes
+
+#ifdef ESP8266
     if (Settings.version < 0x06000000) {
-      Settings.cfg_size = sizeof(SYSCFG);
+      Settings.cfg_size = sizeof(Settings);
       Settings.cfg_crc = GetSettingsCrc();
     }
     if (Settings.version < 0x06000002) {
@@ -1193,7 +1099,7 @@ void SettingsDelta(void)
           Settings.switchmode[i] = SWITCH_MODE;
         }
       }
-      for (uint32_t i = 0; i < sizeof(Settings.my_gp); i++) {
+      for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
         if (Settings.my_gp.io[i] >= GPIO_SWT5) {  // Move up from GPIO_SWT5 to GPIO_KEY1
           Settings.my_gp.io[i] += 4;
         }
@@ -1266,7 +1172,7 @@ void SettingsDelta(void)
       Settings.param[P_OVER_TEMP] = ENERGY_OVERTEMP;
     }
     if (Settings.version < 0x06060007) {
-      memset((char*)&Settings +0xE00, 0x00, sizeof(SYSCFG) -0xE00);
+      memset((char*)&Settings +0xE00, 0x00, sizeof(Settings) -0xE00);
     }
     if (Settings.version < 0x06060008) {
       // Move current tuya dimmer range to the new param.
@@ -1291,8 +1197,8 @@ void SettingsDelta(void)
         Settings.tuya_fnid_map[tuyaindex].dpid = 1;
         tuyaindex++;
       }
-      if (Settings.param[P_ex_TUYA_RELAYS] > 0) {
-        for (uint8_t i = 0 ; i < Settings.param[P_ex_TUYA_RELAYS]; i++) {  // ex SetOption41
+      if (Settings.param[P_ARP_GRATUITOUS] > 0) {            // Was P_ex_TUYA_RELAYS
+        for (uint8_t i = 0 ; i < Settings.param[P_ARP_GRATUITOUS]; i++) {  // ex SetOption41
           Settings.tuya_fnid_map[tuyaindex].fnid = 12 + i;   // TUYA_MCU_FUNC_REL2 -  Create FnID for Switches
           Settings.tuya_fnid_map[tuyaindex].dpid = i + 2;
           tuyaindex++;
@@ -1377,7 +1283,7 @@ void SettingsDelta(void)
       Settings.ex_serial_config = TS_SERIAL_8N1;
     }
     if (Settings.version < 0x07010204) {
-      if (Settings.flag3.ex_cors_enabled == 1) {
+      if (Settings.flag3.mqtt_buttons == 1) {
         strlcpy(Settings.ex_cors_domain, CORS_ENABLED_ALL, sizeof(Settings.ex_cors_domain));
       } else {
         Settings.ex_cors_domain[0] = 0;
@@ -1394,7 +1300,6 @@ void SettingsDelta(void)
       Settings.mqtt_port = Settings.ex_mqtt_port;              // 20A -> EFC
       memcpy((char*)&Settings.serial_config, (char*)&Settings.ex_serial_config, 5);  // 1E4 -> EFE
     }
-
     if (Settings.version < 0x08000000) {
       char temp[strlen(Settings.text_pool) +1];           strncpy(temp, Settings.text_pool, sizeof(temp));  // Was ota_url
       char temp21[strlen(Settings.ex_mqtt_prefix[0]) +1]; strncpy(temp21, Settings.ex_mqtt_prefix[0], sizeof(temp21));
@@ -1465,6 +1370,20 @@ void SettingsDelta(void)
       SettingsUpdateText(SET_FRIENDLYNAME2, Settings.ex_friendlyname[1]);
       SettingsUpdateText(SET_FRIENDLYNAME3, Settings.ex_friendlyname[2]);
       SettingsUpdateText(SET_FRIENDLYNAME4, Settings.ex_friendlyname[3]);
+    }
+    if (Settings.version < 0x08020003) {
+      SettingsUpdateText(SET_TEMPLATE_NAME, Settings.user_template_name);
+      Settings.zb_channel = 0;      // set channel to zero to force reinit of zigbee parameters
+    }
+#endif  // ESP8266
+
+    if (Settings.version < 0x08020004) {
+#ifdef ESP8266
+      Settings.config_version = 0;  // ESP8266 (Has been 0 for long time)
+#endif  // ESP8266
+#ifdef ESP32
+      Settings.config_version = 1;  // ESP32
+#endif  // ESP32
     }
 
     Settings.version = VERSION;

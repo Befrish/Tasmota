@@ -21,19 +21,25 @@
     - Change libraries/PubSubClient/src/PubSubClient.h
         #define MQTT_MAX_PACKET_SIZE 1200
 
-    - Select IDE Tools - Flash Mode: "DOUT"
-    - Select IDE Tools - Flash Size: "1M (no SPIFFS)"
+  Arduino IDE 1.8.12 and up parameters
+    - Select IDE Tools - Board: "Generic ESP8266 Module"
+    - Select IDE Tools - Flash Mode: "DOUT (compatible)"
+    - Select IDE Tools - Flash Size: "1M (FS:none OTA:~502KB)"
+    - Select IDE Tools - LwIP Variant: "v2 Higher Bandwidth (no feature)"
+    - Select IDE Tools - VTables: "Flash"
+    - Select IDE Tools - Espressif FW: "nonos-sdk-2.2.1+100 (190703)"
   ====================================================*/
 
 // Location specific includes
 #include <core_version.h>                   // Arduino_Esp8266 version information (ARDUINO_ESP8266_RELEASE and ARDUINO_ESP8266_RELEASE_2_3_0)
+#include "tasmota_compat.h"
 #include "tasmota_version.h"                // Tasmota version information
 #include "tasmota.h"                        // Enumeration used in my_user_config.h
 #include "my_user_config.h"                 // Fixed user configurable options
 #ifdef USE_MQTT_TLS
-  #include <t_bearssl.h>                    // we need to include before "tasmota_post.h" to take precedence over the BearSSL version in Arduino
+  #include <t_bearssl.h>                    // We need to include before "tasmota_globals.h" to take precedence over the BearSSL version in Arduino
 #endif  // USE_MQTT_TLS
-#include "tasmota_post.h"                   // Configuration overrides for all previous includes
+#include "tasmota_globals.h"                // Function prototypes and global configuration
 #include "i18n.h"                           // Language support configured by my_user_config.h
 #include "tasmota_template.h"               // Hardware configuration
 
@@ -112,15 +118,38 @@ uint16_t tele_period = 9999;                // Tele period timer
 uint16_t blink_counter = 0;                 // Number of blink cycles
 uint16_t seriallog_timer = 0;               // Timer to disable Seriallog
 uint16_t syslog_timer = 0;                  // Timer to re-enable syslog_level
+
+#ifdef ESP32
+#ifdef FINAL_ESP32
+uint16_t gpio_pin[MAX_GPIO_PIN] = { 0 };    // GPIO functions indexed by pin number
+#endif  // FINAL_ESP32
+#endif  // ESP32
+
 int16_t save_data_counter;                  // Counter and flag for config save to Flash
 RulesBitfield rules_flag;                   // Rule state flags (16 bits)
 uint8_t mqtt_cmnd_blocked = 0;              // Ignore flag for publish command
 uint8_t mqtt_cmnd_blocked_reset = 0;        // Count down to reset if needed
 uint8_t state_250mS = 0;                    // State 250msecond per second flag
 uint8_t latching_relay_pulse = 0;           // Latching relay pulse timer
-uint8_t sleep;                              // Current copy of Settings.sleep
+uint8_t ssleep;                             // Current copy of Settings.sleep
 uint8_t blinkspeed = 1;                     // LED blink rate
-uint8_t pin[GPIO_MAX];                      // Possible pin configurations
+
+#ifdef ESP8266
+#ifdef LEGACY_GPIO_ARRAY
+uint8_t pin_gpio[GPIO_MAX];                 // Pin numbers indexed by GPIO function
+#else  // No LEGACY_GPIO_ARRAY
+uint8_t gpio_pin[MAX_GPIO_PIN] = { 0 };     // GPIO functions indexed by pin number
+#endif  // LEGACY_GPIO_ARRAY
+#else  // ESP32
+#ifndef FINAL_ESP32
+#ifdef LEGACY_GPIO_ARRAY
+uint8_t pin_gpio[GPIO_MAX];                 // Pin numbers indexed by GPIO function
+#else  // No LEGACY_GPIO_ARRAY
+uint8_t gpio_pin[MAX_GPIO_PIN] = { 0 };     // GPIO functions indexed by pin number
+#endif  // LEGACY_GPIO_ARRAY
+#endif  // No FINAL_ESP32
+#endif  // ESP8266 - ESP32
+
 uint8_t active_device = 1;                  // Active device in ExecuteCommandPower
 uint8_t leds_present = 0;                   // Max number of LED supported
 uint8_t led_inverted = 0;                   // LED inverted flag (1 = (0 = On, 1 = Off))
@@ -154,6 +183,7 @@ bool spi_flg = false;                       // SPI configured
 bool soft_spi_flg = false;                  // Software SPI configured
 bool ntp_force_sync = false;                // Force NTP sync
 bool is_8285 = false;                       // Hardware device ESP8266EX (0) or ESP8285 (1)
+bool skip_light_fade;                       // Temporarily skip light fading
 myio my_module;                             // Active copy of Module GPIOs (17 x 8 bits)
 gpio_flag my_module_flag;                   // Active copy of Template GPIO flags
 StateBitfield global_state;                 // Global states (currently Wifi and Mqtt) (8 bits)
@@ -183,6 +213,12 @@ char web_log[WEB_LOG_SIZE] = {'\0'};        // Web log buffer
 
 void setup(void)
 {
+#ifdef ESP32
+#ifdef DISABLE_ESP32_BROWNOUT
+  DisableBrownout();      // Workaround possible weak LDO resulting in brownout detection during Wifi connection
+#endif
+#endif
+
   global_state.data = 3;  // Init global state (wifi_down, mqtt_down) to solve possible network issues
 
   RtcRebootLoad();
@@ -220,7 +256,7 @@ void setup(void)
   syslog_level = Settings.syslog_level;
   stop_flash_rotate = Settings.flag.stop_flash_rotate;  // SetOption12 - Switch between dynamic or fixed slot flash save location
   save_data_counter = Settings.save_data;
-  sleep = Settings.sleep;
+  ssleep = Settings.sleep;
 #ifndef USE_EMULATION
   Settings.flag2.emulation = 0;
 #else
@@ -247,14 +283,19 @@ void setup(void)
         Settings.rule_enabled = 0;                  // Disable all rules
       }
       if (RtcReboot.fast_reboot_count > Settings.param[P_BOOT_LOOP_OFFSET] +3) {  // Restarted 5 times
-        for (uint32_t i = 0; i < sizeof(Settings.my_gp); i++) {
+        for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
           Settings.my_gp.io[i] = GPIO_NONE;         // Reset user defined GPIO disabling sensors
         }
         Settings.my_adc0 = ADC0_NONE;               // Reset user defined ADC0 disabling sensors
       }
       if (RtcReboot.fast_reboot_count > Settings.param[P_BOOT_LOOP_OFFSET] +4) {  // Restarted 6 times
+#ifdef ESP8266
         Settings.module = SONOFF_BASIC;             // Reset module to Sonoff Basic
   //      Settings.last_module = SONOFF_BASIC;
+#endif  // ESP8266
+#ifdef ESP32
+        Settings.module = WEMOS;                    // Reset module to Wemos
+#endif  // ESP32
       }
       AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_APPLICATION D_LOG_SOME_SETTINGS_RESET " (%d)"), RtcReboot.fast_reboot_count);
     }
@@ -264,7 +305,7 @@ void setup(void)
   Format(mqtt_topic, SettingsText(SET_MQTT_TOPIC), sizeof(mqtt_topic));
   if (strstr(SettingsText(SET_HOSTNAME), "%") != nullptr) {
     SettingsUpdateText(SET_HOSTNAME, WIFI_HOSTNAME);
-    snprintf_P(my_hostname, sizeof(my_hostname)-1, SettingsText(SET_HOSTNAME), mqtt_topic, ESP.getChipId() & 0x1FFF);
+    snprintf_P(my_hostname, sizeof(my_hostname)-1, SettingsText(SET_HOSTNAME), mqtt_topic, ESP_getChipId() & 0x1FFF);
   } else {
     snprintf_P(my_hostname, sizeof(my_hostname)-1, SettingsText(SET_HOSTNAME));
   }
@@ -278,7 +319,7 @@ void setup(void)
 
   SetPowerOnState();
 
-  AddLog_P2(LOG_LEVEL_INFO, PSTR(D_PROJECT " %s %s " D_VERSION " %s%s-" ARDUINO_ESP8266_RELEASE), PROJECT, SettingsText(SET_FRIENDLYNAME1), my_version, my_image);
+  AddLog_P2(LOG_LEVEL_INFO, PSTR(D_PROJECT " %s %s " D_VERSION " %s%s-" ARDUINO_CORE_RELEASE), PROJECT, SettingsText(SET_FRIENDLYNAME1), my_version, my_image);
 #ifdef FIRMWARE_MINIMAL
   AddLog_P2(LOG_LEVEL_INFO, PSTR(D_WARNING_MINIMAL_VERSION));
 #endif  // FIRMWARE_MINIMAL
@@ -368,10 +409,10 @@ void loop(void)
 
   if (Settings.flag3.sleep_normal) {              // SetOption60 - Enable normal sleep instead of dynamic sleep
     //  yield();                                  // yield == delay(0), delay contains yield, auto yield in loop
-    delay(sleep);                                 // https://github.com/esp8266/Arduino/issues/2021
+    delay(ssleep);                                // https://github.com/esp8266/Arduino/issues/2021
   } else {
-    if (my_activity < (uint32_t)sleep) {
-      delay((uint32_t)sleep - my_activity);       // Provide time for background tasks like wifi
+    if (my_activity < (uint32_t)ssleep) {
+      delay((uint32_t)ssleep - my_activity);      // Provide time for background tasks like wifi
     } else {
       if (global_state.wifi_down) {
         delay(my_activity /2);                    // If wifi down and my_activity > setoption36 then force loop delay to 1/3 of my_activity period
@@ -380,7 +421,7 @@ void loop(void)
   }
 
   if (!my_activity) { my_activity++; }            // We cannot divide by 0
-  uint32_t loop_delay = sleep;
+  uint32_t loop_delay = ssleep;
   if (!loop_delay) { loop_delay++; }              // We cannot divide by 0
   uint32_t loops_per_second = 1000 / loop_delay;  // We need to keep track of this many loops per second
   uint32_t this_cycle_ratio = 100 * my_activity / loop_delay;
