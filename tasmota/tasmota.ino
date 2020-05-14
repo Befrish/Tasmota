@@ -120,9 +120,7 @@ uint16_t seriallog_timer = 0;               // Timer to disable Seriallog
 uint16_t syslog_timer = 0;                  // Timer to re-enable syslog_level
 
 #ifdef ESP32
-#ifdef FINAL_ESP32
 uint16_t gpio_pin[MAX_GPIO_PIN] = { 0 };    // GPIO functions indexed by pin number
-#endif  // FINAL_ESP32
 #endif  // ESP32
 
 int16_t save_data_counter;                  // Counter and flag for config save to Flash
@@ -135,19 +133,7 @@ uint8_t ssleep;                             // Current copy of Settings.sleep
 uint8_t blinkspeed = 1;                     // LED blink rate
 
 #ifdef ESP8266
-#ifdef LEGACY_GPIO_ARRAY
-uint8_t pin_gpio[GPIO_MAX];                 // Pin numbers indexed by GPIO function
-#else  // No LEGACY_GPIO_ARRAY
 uint8_t gpio_pin[MAX_GPIO_PIN] = { 0 };     // GPIO functions indexed by pin number
-#endif  // LEGACY_GPIO_ARRAY
-#else  // ESP32
-#ifndef FINAL_ESP32
-#ifdef LEGACY_GPIO_ARRAY
-uint8_t pin_gpio[GPIO_MAX];                 // Pin numbers indexed by GPIO function
-#else  // No LEGACY_GPIO_ARRAY
-uint8_t gpio_pin[MAX_GPIO_PIN] = { 0 };     // GPIO functions indexed by pin number
-#endif  // LEGACY_GPIO_ARRAY
-#endif  // No FINAL_ESP32
 #endif  // ESP8266 - ESP32
 
 uint8_t active_device = 1;                  // Active device in ExecuteCommandPower
@@ -165,12 +151,13 @@ uint8_t devices_present = 0;                // Max number of devices supported
 uint8_t seriallog_level;                    // Current copy of Settings.seriallog_level
 uint8_t syslog_level;                       // Current copy of Settings.syslog_level
 uint8_t my_module_type;                     // Current copy of Settings.module or user template type
-uint8_t my_adc0;                            // Active copy of Module ADC0
+uint8_t my_adc0 = 0;                        // Active copy of Module ADC0
 uint8_t last_source = 0;                    // Last command source
 uint8_t shutters_present = 0;               // Number of actual define shutters
 uint8_t prepped_loglevel = 0;               // Delayed log level message
 //uint8_t mdns_delayed_start = 0;             // mDNS delayed start
-bool serial_local = false;                  // Handle serial locally;
+bool serial_local = false;                  // Handle serial locally
+bool serial_buffer_overrun = false;         // Serial buffer overrun
 bool fallback_topic_flag = false;           // Use Topic or FallbackTopic
 bool backlog_mutex = false;                 // Command backlog pending
 bool interlock_mutex = false;               // Interlock power command pending
@@ -211,8 +198,7 @@ char web_log[WEB_LOG_SIZE] = {'\0'};        // Web log buffer
  * Main
 \*********************************************************************************************/
 
-void setup(void)
-{
+void setup(void) {
 #ifdef ESP32
 #ifdef DISABLE_ESP32_BROWNOUT
   DisableBrownout();      // Workaround possible weak LDO resulting in brownout detection during Wifi connection
@@ -229,6 +215,7 @@ void setup(void)
   RtcRebootSave();
 
   Serial.begin(APP_BAUDRATE);
+//  Serial.setRxBufferSize(INPUT_BUFFER_SIZE);  // Default is 256 chars
   seriallog_level = LOG_LEVEL_INFO;  // Allow specific serial messages until config loaded
 
   snprintf_P(my_version, sizeof(my_version), PSTR("%d.%d.%d"), VERSION >> 24 & 0xff, VERSION >> 16 & 0xff, VERSION >> 8 & 0xff);  // Release version 6.3.0
@@ -286,16 +273,17 @@ void setup(void)
         for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
           Settings.my_gp.io[i] = GPIO_NONE;         // Reset user defined GPIO disabling sensors
         }
+#ifdef ESP8266
         Settings.my_adc0 = ADC0_NONE;               // Reset user defined ADC0 disabling sensors
+#endif
       }
       if (RtcReboot.fast_reboot_count > Settings.param[P_BOOT_LOOP_OFFSET] +4) {  // Restarted 6 times
 #ifdef ESP8266
         Settings.module = SONOFF_BASIC;             // Reset module to Sonoff Basic
   //      Settings.last_module = SONOFF_BASIC;
-#endif  // ESP8266
-#ifdef ESP32
+#else  // ESP32
         Settings.module = WEMOS;                    // Reset module to Wemos
-#endif  // ESP32
+#endif  // ESP8266 - ESP32
       }
       AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_APPLICATION D_LOG_SOME_SETTINGS_RESET " (%d)"), RtcReboot.fast_reboot_count);
     }
@@ -336,8 +324,7 @@ void setup(void)
   XsnsCall(FUNC_INIT);
 }
 
-void BacklogLoop(void)
-{
+void BacklogLoop(void) {
   if (TimeReached(backlog_delay)) {
     if (!BACKLOG_EMPTY && !backlog_mutex) {
 #ifdef SUPPORT_IF_STATEMENT
@@ -356,8 +343,18 @@ void BacklogLoop(void)
   }
 }
 
-void loop(void)
-{
+void SleepDelay(uint32_t mseconds) {
+  if (mseconds) {
+    for (uint32_t wait = 0; wait < mseconds; wait++) {
+      delay(1);
+      if (Serial.available()) { break; }  // We need to service serial buffer ASAP as otherwise we get uart buffer overrun
+    }
+  } else {
+    delay(0);
+  }
+}
+
+void loop(void) {
   uint32_t my_sleep = millis();
 
   XdrvCall(FUNC_LOOP);
@@ -407,23 +404,23 @@ void loop(void)
 
   uint32_t my_activity = millis() - my_sleep;
 
-  if (Settings.flag3.sleep_normal) {              // SetOption60 - Enable normal sleep instead of dynamic sleep
-    //  yield();                                  // yield == delay(0), delay contains yield, auto yield in loop
-    delay(ssleep);                                // https://github.com/esp8266/Arduino/issues/2021
+  if (Settings.flag3.sleep_normal) {               // SetOption60 - Enable normal sleep instead of dynamic sleep
+    //  yield();                                   // yield == delay(0), delay contains yield, auto yield in loop
+    SleepDelay(ssleep);                            // https://github.com/esp8266/Arduino/issues/2021
   } else {
     if (my_activity < (uint32_t)ssleep) {
-      delay((uint32_t)ssleep - my_activity);      // Provide time for background tasks like wifi
+      SleepDelay((uint32_t)ssleep - my_activity);  // Provide time for background tasks like wifi
     } else {
       if (global_state.wifi_down) {
-        delay(my_activity /2);                    // If wifi down and my_activity > setoption36 then force loop delay to 1/3 of my_activity period
+        SleepDelay(my_activity /2);                // If wifi down and my_activity > setoption36 then force loop delay to 1/3 of my_activity period
       }
     }
   }
 
-  if (!my_activity) { my_activity++; }            // We cannot divide by 0
+  if (!my_activity) { my_activity++; }             // We cannot divide by 0
   uint32_t loop_delay = ssleep;
-  if (!loop_delay) { loop_delay++; }              // We cannot divide by 0
-  uint32_t loops_per_second = 1000 / loop_delay;  // We need to keep track of this many loops per second
+  if (!loop_delay) { loop_delay++; }               // We cannot divide by 0
+  uint32_t loops_per_second = 1000 / loop_delay;   // We need to keep track of this many loops per second
   uint32_t this_cycle_ratio = 100 * my_activity / loop_delay;
   loop_load_avg = loop_load_avg - (loop_load_avg / loops_per_second) + (this_cycle_ratio / loops_per_second); // Take away one loop average away and add the new one
 }

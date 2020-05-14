@@ -87,10 +87,7 @@ void ResponseCmndIdxNumber(int value)
 
 void ResponseCmndChar_P(const char* value)
 {
-  size_t buf_size = strlen_P(value);
-  char buf[buf_size + 1];
-  strcpy_P(buf, value);
-  Response_P(S_JSON_COMMAND_SVALUE, XdrvMailbox.command, buf);
+  Response_P(S_JSON_COMMAND_SVALUE, XdrvMailbox.command, value);
 }
 
 void ResponseCmndChar(const char* value)
@@ -464,6 +461,9 @@ void CmndStatus(void)
 
   if ((0 == payload) || (4 == payload)) {
     Response_P(PSTR("{\"" D_CMND_STATUS D_STATUS4_MEMORY "\":{\"" D_JSON_PROGRAMSIZE "\":%d,\"" D_JSON_FREEMEMORY "\":%d,\"" D_JSON_HEAPSIZE "\":%d,\""
+#ifdef ESP32
+                          D_JSON_PSRMAXMEMORY "\":%d,\"" D_JSON_PSRFREEMEMORY "\":%d,"
+#endif
                           D_JSON_PROGRAMFLASHSIZE "\":%d,\"" D_JSON_FLASHSIZE "\":%d"
 #ifdef ESP8266
                           ",\"" D_JSON_FLASHCHIPID "\":\"%06X\""
@@ -471,6 +471,9 @@ void CmndStatus(void)
                           ",\"" D_JSON_FLASHMODE "\":%d,\""
                           D_JSON_FEATURES "\":[\"%08X\",\"%08X\",\"%08X\",\"%08X\",\"%08X\",\"%08X\",\"%08X\"]"),
                           ESP_getSketchSize()/1024, ESP.getFreeSketchSpace()/1024, ESP_getFreeHeap()/1024,
+#ifdef ESP32
+                          ESP.getPsramSize()/1024, ESP.getFreePsram()/1024,
+#endif
                           ESP.getFlashChipSize()/1024, ESP.getFlashChipRealSize()/1024
 #ifdef ESP8266
                           , ESP.getFlashChipId()
@@ -564,6 +567,11 @@ void CmndStatus(void)
 #ifdef USE_SCRIPT_STATUS
   if (bitRead(Settings.rule_enabled, 0)) Run_Scripter(">U",2,mqtt_data);
 #endif
+
+  if (payload) {
+    XdrvRulesProcess();  // Allow rule processing on single Status command only
+  }
+
   mqtt_data[0] = '\0';
 }
 
@@ -659,7 +667,7 @@ void CmndUpgrade(void)
 void CmndOtaUrl(void)
 {
   if (XdrvMailbox.data_len > 0) {
-    SettingsUpdateText(SET_OTAURL, (SC_DEFAULT == Shortcut()) ? OTA_URL : XdrvMailbox.data);
+    SettingsUpdateText(SET_OTAURL, (SC_DEFAULT == Shortcut()) ? PSTR(OTA_URL) : XdrvMailbox.data);
   }
   ResponseCmndChar(SettingsText(SET_OTAURL));
 }
@@ -1055,19 +1063,11 @@ void CmndGpio(void)
           break;
         }
 #else  // ESP32
-#ifndef FINAL_ESP32
-        uint32_t midx = pgm_read_byte(kGpioNiceList + i);
-        if (midx == XdrvMailbox.payload) {
+        uint32_t midx = pgm_read_word(kGpioNiceList + i);
+        if ((XdrvMailbox.payload >= (midx & 0xFFE0)) && (XdrvMailbox.payload < midx)) {
           present = true;
           break;
         }
-#else  // FINAL_ESP32
-        uint32_t midx = pgm_read_word(kGpioNiceList + i) << 5;
-        if (midx == (XdrvMailbox.payload & 0xFFE0)) {
-          present = true;
-          break;
-        }
-#endif  // FINAL_ESP32
 #endif  // ESP8266 - ESP32
       }
       if (present) {
@@ -1083,24 +1083,29 @@ void CmndGpio(void)
     Response_P(PSTR("{"));
     bool jsflg = false;
     for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
-      if (ValidGPIO(i, cmodule.io[i]) || ((GPIO_USER == XdrvMailbox.payload) && !FlashPin(i))) {
+      if (ValidGPIO(i, cmodule.io[i]) || ((AGPIO(GPIO_USER) == XdrvMailbox.payload) && !FlashPin(i))) {
         if (jsflg) { ResponseAppend_P(PSTR(",")); }
         jsflg = true;
         uint32_t sensor_type = Settings.my_gp.io[i];
         if (!ValidGPIO(i, cmodule.io[i])) {
           sensor_type = cmodule.io[i];
-          if (GPIO_USER == sensor_type) {  // A user GPIO equals a not connected (=GPIO_NONE) GPIO here
+          if (AGPIO(GPIO_USER) == sensor_type) {  // A user GPIO equals a not connected (=GPIO_NONE) GPIO here
             sensor_type = GPIO_NONE;
           }
         }
+        char sindex[4] = { 0 };
 #ifdef ESP8266
         uint32_t sensor_name_idx = sensor_type;
 #else  // ESP32
-#ifndef FINAL_ESP32
-        uint32_t sensor_name_idx = sensor_type;
-#else  // FINAL_ESP32
         uint32_t sensor_name_idx = sensor_type >> 5;
-#endif  // FINAL_ESP32
+        uint32_t nice_list_search = sensor_type & 0xFFE0;
+        for (uint32_t j = 0; j < ARRAY_SIZE(kGpioNiceList); j++) {
+          uint32_t nls_idx = pgm_read_word(kGpioNiceList + j);
+          if (((nls_idx & 0xFFE0) == nice_list_search) && ((nls_idx & 0x001F) > 0)) {
+            snprintf_P(sindex, sizeof(sindex), PSTR("%d"), (sensor_type & 0x001F) +1);
+            break;
+          }
+        }
 #endif  // ESP8266 - ESP32
         const char *sensor_names = kSensorNames;
         if (sensor_name_idx > GPIO_FIX_START) {
@@ -1108,8 +1113,8 @@ void CmndGpio(void)
           sensor_names = kSensorNamesFixed;
         }
         char stemp1[TOPSZ];
-        ResponseAppend_P(PSTR("\"" D_CMND_GPIO "%d\":{\"%d\":\"%s\"}"),
-          i, sensor_type, GetTextIndexed(stemp1, sizeof(stemp1), sensor_name_idx, sensor_names));
+        ResponseAppend_P(PSTR("\"" D_CMND_GPIO "%d\":{\"%d\":\"%s%s\"}"),
+          i, sensor_type, GetTextIndexed(stemp1, sizeof(stemp1), sensor_name_idx, sensor_names), sindex);
       }
     }
     if (jsflg) {
@@ -1131,13 +1136,8 @@ void CmndGpios(void)
     uint32_t midx = pgm_read_byte(kGpioNiceList + i);
     uint32_t ridx = midx;
 #else  // ESP32
-#ifndef FINAL_ESP32
-    uint32_t midx = pgm_read_byte(kGpioNiceList + i);
-    uint32_t ridx = midx;
-#else  // FINAL_ESP32
-    uint32_t midx = pgm_read_word(kGpioNiceList + i);
-    uint32_t ridx = midx << 5;
-#endif  // FINAL_ESP32
+    uint32_t ridx = pgm_read_word(kGpioNiceList + i) & 0xFFE0;
+    uint32_t midx = ridx >> 5;
 #endif  // ESP8266 - ESP32
     if ((XdrvMailbox.payload != 255) && GetUsedInModule(midx, cmodule.io)) { continue; }
     if (!jsflg) {
@@ -1219,7 +1219,11 @@ void CmndPwmfrequency(void)
 {
   if ((1 == XdrvMailbox.payload) || ((XdrvMailbox.payload >= PWM_MIN) && (XdrvMailbox.payload <= PWM_MAX))) {
     Settings.pwm_frequency = (1 == XdrvMailbox.payload) ? PWM_FREQ : XdrvMailbox.payload;
+#ifdef ESP8266
     analogWriteFreq(Settings.pwm_frequency);   // Default is 1000 (core_esp8266_wiring_pwm.c)
+#else
+    analogWriteFreqRange(0,Settings.pwm_frequency,Settings.pwm_range);
+#endif
   }
   ResponseCmndNumber(Settings.pwm_frequency);
 }
@@ -1233,7 +1237,11 @@ void CmndPwmrange(void)
         Settings.pwm_value[i] = Settings.pwm_range;
       }
     }
+#ifdef ESP8266
     analogWriteRange(Settings.pwm_range);      // Default is 1023 (Arduino.h)
+#else
+    analogWriteFreqRange(0,Settings.pwm_frequency,Settings.pwm_range);
+#endif
   }
   ResponseCmndNumber(Settings.pwm_range);
 }
@@ -1394,7 +1402,7 @@ void CmndNtpServer(void)
       uint32_t ntp_server = SET_NTPSERVER1 + XdrvMailbox.index -1;
       if (XdrvMailbox.data_len > 0) {
         SettingsUpdateText(ntp_server,
-          (SC_CLEAR == Shortcut()) ? "" : (SC_DEFAULT == Shortcut()) ? (1 == XdrvMailbox.index) ? NTP_SERVER1 : (2 == XdrvMailbox.index) ? NTP_SERVER2 : NTP_SERVER3 : XdrvMailbox.data);
+          (SC_CLEAR == Shortcut()) ? "" : (SC_DEFAULT == Shortcut()) ? (1 == XdrvMailbox.index) ? PSTR(NTP_SERVER1) : (2 == XdrvMailbox.index) ? PSTR(NTP_SERVER2) : PSTR(NTP_SERVER3) : XdrvMailbox.data);
         SettingsUpdateText(ntp_server, ReplaceCommaWithDot(SettingsText(ntp_server)));
   //        restart_flag = 2;  // Issue #3890
         ntp_force_sync = true;
@@ -1602,7 +1610,7 @@ void CmndReset(void)
   switch (XdrvMailbox.payload) {
   case 1:
     restart_flag = 211;
-    ResponseCmndChar(D_JSON_RESET_AND_RESTARTING);
+    ResponseCmndChar(PSTR(D_JSON_RESET_AND_RESTARTING));
     break;
   case 2 ... 6:
     restart_flag = 210 + XdrvMailbox.payload;
@@ -1614,7 +1622,7 @@ void CmndReset(void)
     ResponseCmndDone();
     break;
   default:
-    ResponseCmndChar(D_JSON_ONE_TO_RESET);
+    ResponseCmndChar(PSTR(D_JSON_ONE_TO_RESET));
   }
 }
 

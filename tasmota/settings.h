@@ -112,7 +112,7 @@ typedef union {                            // Restricted by MISRA-C Rule 18.4 bu
     uint32_t only_json_message : 1;        // bit 8 (v8.2.0.3)   - SetOption90 - Disable non-json MQTT response
     uint32_t fade_at_startup : 1;          // bit 9 (v8.2.0.3)   - SetOption91 - Enable light fading at start/power on
     uint32_t pwm_ct_mode : 1;              // bit 10 (v8.2.0.4)  - SetOption92 - Set PWM Mode from regular PWM to ColorTemp control (Xiaomi Philips ...)
-    uint32_t spare11 : 1;
+    uint32_t compress_rules_cpu : 1;       // bit 11 (v8.2.0.6)  - SetOption93 - Keep uncompressed rules in memory to avoid CPU load of uncompressing at each tick
     uint32_t spare12 : 1;
     uint32_t spare13 : 1;
     uint32_t spare14 : 1;
@@ -181,6 +181,35 @@ typedef union {
     uint32_t arm : 1;                      // bit 31
   };
 } Timer;
+
+typedef union {                            // Restricted by MISRA-C Rule 18.4 but so useful...
+  uint32_t data;
+  struct {
+    uint32_t stream : 1;
+    uint32_t mirror : 1;
+    uint32_t flip : 1;
+    uint32_t spare3 : 1;
+    uint32_t spare4 : 1;
+    uint32_t spare5 : 1;
+    uint32_t spare6 : 1;
+    uint32_t spare7 : 1;
+    uint32_t spare8 : 1;
+    uint32_t spare9 : 1;
+    uint32_t spare10 : 1;
+    uint32_t spare11 : 1;
+    uint32_t spare12 : 1;
+    uint32_t spare13 : 1;
+    uint32_t spare14 : 1;
+    uint32_t spare15 : 1;
+    uint32_t spare16 : 1;
+    uint32_t spare17 : 1;
+    uint32_t spare18 : 1;
+    uint32_t contrast : 3;
+    uint32_t brightness : 3;
+    uint32_t saturation : 3;
+    uint32_t resolution : 4;
+  };
+} WebCamCfg;
 
 typedef union {
   uint16_t data;
@@ -362,15 +391,14 @@ struct {
   char          ex_friendlyname[4][33];    // 3AC
   char          ex_switch_topic[33];       // 430
 #else  // ESP32
-#ifndef FINAL_ESP32
-  char          ex_friendlyname[4][33];    // 3AC
-  char          ex_switch_topic[33];       // 430
-#else  // FINAL_ESP32
   myio          my_gp;                     // 3AC - 2 x 40 bytes (ESP32)
   mytmplt       user_template;             // 3FC - 2 x 37 bytes (ESP32)
 
-  uint8_t       free_esp32_446[11];        // 446
-#endif  // FINAL_ESP32
+  uint8_t       free_esp32_446[6];         // 446
+
+  WebCamCfg     webcam_config;             // 44C
+
+  uint8_t       free_esp32_450[1];         // 450
 #endif  // ESP8266 - ESP32
 
   char          serial_delimiter;          // 451
@@ -415,18 +443,7 @@ struct {
   uint32_t      ip_address[4];             // 544
   unsigned long energy_kWhtotal;           // 554
 
-#ifdef ESP8266
   char          ex_mqtt_fulltopic[100];    // 558
-#else  // ESP32
-#ifndef FINAL_ESP32
-  myio          my_gp;                     // 558 - 40 bytes (ESP32)
-  mytmplt       user_template;             // 580 - 37 bytes (ESP32)
-
-  uint8_t       free_esp32_5a5[23];        // 5A5
-#else  // FINAL_ESP32
-  char          ex_mqtt_fulltopic[100];    // 558
-#endif  // FINAL_ESP32
-#endif  // ESP8266 - ESP32
 
   SysBitfield2  flag2;                     // 5BC
   unsigned long pulse_counter[MAX_COUNTERS];  // 5C0
@@ -495,6 +512,12 @@ struct {
   uint8_t       shutter_position[MAX_SHUTTERS];      // E80
   uint8_t       shutter_startrelay[MAX_SHUTTERS];    // E84
   uint8_t       pcf8574_config[MAX_PCF8574];         // E88
+  uint8_t       ot_hot_water_setpoint;     // E8C
+  uint8_t       ot_boiler_setpoint;        // E8D
+  uint8_t       ot_flags;                  // E8E
+
+  uint8_t       free_e8f[1];               // E8F
+
   uint16_t      dimmer_hw_min;             // E90
   uint16_t      dimmer_hw_max;             // E92
   uint32_t      deepsleep;                 // E94
@@ -541,8 +564,13 @@ struct {
   uint8_t       zb_free_byte;              // F33
   uint16_t      pms_wake_interval;         // F34
   uint8_t       config_version;            // F36
+  uint8_t       windmeter_pulses_x_rot;    // F37
+  uint16_t      windmeter_radius;          // F38
+  uint16_t      windmeter_pulse_debounce;  // F3A
+  int16_t       windmeter_speed_factor;    // F3C
+  uint8_t       windmeter_tele_pchange;    // F3E
 
-  uint8_t       free_f37[129];             // F37 - Decrement if adding new Setting variables just above and below
+  uint8_t       free_f3f[121];             // F3F - Decrement if adding new Setting variables just above and below
 
   // Only 32 bit boundary variables below
   uint16_t      pulse_counter_debounce_low;  // FB8
